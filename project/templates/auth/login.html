@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>政企智能舆情分析报告生成智能体应用系统 - 用户登录</title>
+    <!-- 引入LayUI CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='layui/css/layui.css') }}">
+    <!-- 引入自定义CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            background-color: #1E9FFF;
+            background-image: linear-gradient(135deg, #1E9FFF 0%, #009688 100%);
+            background-attachment: fixed;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .login-box {
+            width: 100%;
+            max-width: 420px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .login-logo {
+            width: 80px;
+            height: 80px;
+            background: #1E9FFF;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 36px;
+            color: white;
+        }
+        
+        .login-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .login-subtitle {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .layui-form-item {
+            margin-bottom: 25px;
+        }
+        
+        .layui-form-label {
+            width: 60px;
+            padding: 9px 0;
+            text-align: center;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        .layui-input-block {
+            margin-left: 60px;
+            position: relative;
+        }
+        
+        .layui-input {
+            border-radius: 5px;
+            border: 1px solid #e6e6e6;
+            height: 42px;
+            font-size: 15px;
+        }
+        
+        .layui-btn {
+            width: 100%;
+            height: 42px;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 500;
+            background: linear-gradient(135deg, #1E9FFF 0%, #009688 100%);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        .layui-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(30, 159, 255, 0.4);
+        }
+        
+        .layui-btn:hover {
+            background: #0C8CE1;
+        }
+        
+        .login-extra {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        
+        .login-extra a {
+            color: #1E9FFF;
+            text-decoration: none;
+        }
+        
+        .login-extra a:hover {
+            text-decoration: underline;
+        }
+        
+        .layui-form-checkbox[lay-skin=primary] {
+            margin-top: 10px;
+        }
+        
+        .layui-form-checkbox[lay-skin=primary] span {
+            color: #666;
+        }
+        
+        /* 密码显示/隐藏按钮 */
+        .password-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #999;
+            font-size: 18px;
+        }
+        
+        .password-toggle:hover {
+            color: #1E9FFF;
+        }
+        
+        /* 表单错误信息 */
+        .layui-text-danger {
+            display: block;
+            padding: 5px 0 0 60px;
+            font-size: 12px;
+            color: #FF5722;
+        }
+        
+        /* 记住密码样式 */
+        .remember-me {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .remember-me input[type="checkbox"] {
+            margin-right: 5px;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .login-box {
+                padding: 20px;
+            }
+            
+            .login-title {
+                font-size: 20px;
+            }
+            
+            .layui-text-danger {
+                padding: 5px 0 0 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <div class="login-logo">
+                    <i class="layui-icon layui-icon-user"></i>
+                </div>
+                <div class="login-title">政企智能舆情分析报告生成智能体应用系统</div>
+                <div class="login-subtitle">请输入您的账号信息</div>
+            </div>
+            
+            <form class="layui-form" method="POST" action="{{ url_for('auth.login') }}">
+                {{ form.hidden_tag() }}
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label"><i class="layui-icon layui-icon-username"></i></label>
+                    <div class="layui-input-block">
+                        {{ form.username(class="layui-input", placeholder="用户名/工号") }}
+                    </div>
+                    {% for error in form.username.errors %}
+                        <div class="layui-form-mid layui-word-aux layui-text-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label"><i class="layui-icon layui-icon-password"></i></label>
+                    <div class="layui-input-block">
+                        {{ form.password(class="layui-input", id="password-input", placeholder="密码") }}
+                        <i class="layui-icon layui-icon-eye password-toggle" id="password-toggle"></i>
+                    </div>
+                    {% for error in form.password.errors %}
+                        <div class="layui-text-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                
+                <div class="layui-form-item">
+                    <div class="layui-input-block remember-me">
+                        {{ form.remember(class="layui-input layui-input-checkbox") }}
+                        {{ form.remember.label }}
+                    </div>
+                </div>
+                
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        {{ form.submit(class="layui-btn") }}
+                    </div>
+                </div>
+            </form>
+            
+            <div class="login-extra">
+                <p>还没有账号？<a href="{{ url_for('auth.register') }}">立即注册</a></p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 引入LayUI JavaScript -->
+    <script src="{{ url_for('static', filename='layui/layui.js') }}"></script>
+    <script>
+        layui.use(['form'], function() {
+            var form = layui.form;
+            
+            // 表单验证
+            form.verify({
+                username: function(value) {
+                    if(value.length < 2 || value.length > 20) {
+                        return '用户名长度必须在2到20个字符之间';
+                    }
+                },
+                password: function(value) {
+                    if(value.length < 6) {
+                        return '密码长度不能少于6个字符';
+                    }
+                }
+            });
+        });
+        
+        // 密码显示/隐藏功能
+        document.getElementById('password-toggle').addEventListener('click', function() {
+            var passwordInput = document.getElementById('password-input');
+            var icon = this;
+            
+            if(passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('layui-icon-eye');
+                icon.classList.add('layui-icon-eye-off');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('layui-icon-eye-off');
+                icon.classList.add('layui-icon-eye');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+
+{% block title %}系统设置{% endblock %}
+
+{% block header %}系统设置{% endblock %}
+
+{% block content %}
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-header">
+                    <span class="layui-breadcrumb">
+                        <a href="{{ url_for('main.index') }}"><i class="layui-icon layui-icon-home"></i> 首页</a>
+                        <a><cite>系统设置</cite></a>
+                    </span>
+                    <div class="layui-card-header-tool">
+                        <span class="layui-badge layui-bg-blue">系统管理</span>
+                    </div>
+                </div>
+                <div class="layui-card-body">
+                    <p class="layui-text-gray">欢迎使用系统设置中心，您可以在这里管理系统的各项功能和配置。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 系统管理功能卡片 -->
+    <div class="layui-row layui-col-space15" style="margin-top: 15px;">
+        <!-- 用户管理 -->
+        <div class="layui-col-xs12 layui-col-sm6 layui-col-md4">
+            <div class="layui-card layadmin-card-list">
+                <div class="layui-card-body">
+                    <a href="{{ url_for('system.users') }}" style="display: block;">
+                        <div class="layui-row">
+                            <div class="layui-col-xs3">
+                                <div class="layui-bg-blue" style="display: inline-block; padding: 15px; border-radius: 50%;">
+                                    <i class="layui-icon layui-icon-user" style="font-size: 32px; color: #fff;"></i>
+                                </div>
+                            </div>
+                            <div class="layui-col-xs9">
+                                <h3 class="layui-card-title">用户管理</h3>
+                                <p class="layui-text-gray">管理系统用户账号，包括添加、编辑和删除用户</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 角色管理 -->
+        <div class="layui-col-xs12 layui-col-sm6 layui-col-md4">
+            <div class="layui-card layadmin-card-list">
+                <div class="layui-card-body">
+                    <a href="{{ url_for('system.roles') }}" style="display: block;">
+                        <div class="layui-row">
+                            <div class="layui-col-xs3">
+                                <div class="layui-bg-green" style="display: inline-block; padding: 15px; border-radius: 50%;">
+                                    <i class="layui-icon layui-icon-group" style="font-size: 32px; color: #fff;"></i>
+                                </div>
+                            </div>
+                            <div class="layui-col-xs9">
+                                <h3 class="layui-card-title">角色管理</h3>
+                                <p class="layui-text-gray">管理用户角色和权限，控制用户访问范围</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 系统配置 -->
+        <div class="layui-col-xs12 layui-col-sm6 layui-col-md4">
+            <div class="layui-card layadmin-card-list">
+                <div class="layui-card-body">
+                    <a href="{{ url_for('system.config') }}" style="display: block;">
+                        <div class="layui-row">
+                            <div class="layui-col-xs3">
+                                <div class="layui-bg-orange" style="display: inline-block; padding: 15px; border-radius: 50%;">
+                                    <i class="layui-icon layui-icon-set" style="font-size: 32px; color: #fff;"></i>
+                                </div>
+                            </div>
+                            <div class="layui-col-xs9">
+                                <h3 class="layui-card-title">系统配置</h3>
+                                <p class="layui-text-gray">配置系统基本信息、LOGO和其他参数</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 权限管理 -->
+        <div class="layui-col-xs12 layui-col-sm6 layui-col-md4">
+            <div class="layui-card layadmin-card-list">
+                <div class="layui-card-body">
+                    <a href="#" style="display: block;">
+                        <div class="layui-row">
+                            <div class="layui-col-xs3">
+                                <div class="layui-bg-red" style="display: inline-block; padding: 15px; border-radius: 50%;">
+                                    <i class="layui-icon layui-icon-shezhi" style="font-size: 32px; color: #fff;"></i>
+                                </div>
+                            </div>
+                            <div class="layui-col-xs9">
+                                <h3 class="layui-card-title">权限管理</h3>
+                                <p class="layui-text-gray">管理系统权限和菜单，控制用户操作权限</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 日志管理 -->
+        <div class="layui-col-xs12 layui-col-sm6 layui-col-md4">
+            <div class="layui-card layadmin-card-list">
+                <div class="layui-card-body">
+                    <a href="#" style="display: block;">
+                        <div class="layui-row">
+                            <div class="layui-col-xs3">
+                                <div class="layui-bg-purple" style="display: inline-block; padding: 15px; border-radius: 50%;">
+                                    <i class="layui-icon layui-icon-read" style="font-size: 32px; color: #fff;"></i>
+                                </div>
+                            </div>
+                            <div class="layui-col-xs9">
+                                <h3 class="layui-card-title">日志管理</h3>
+                                <p class="layui-text-gray">查看系统操作日志和错误日志</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 安全设置 -->
+        <div class="layui-col-xs12 layui-col-sm6 layui-col-md4">
+            <div class="layui-card layadmin-card-list">
+                <div class="layui-card-body">
+                    <a href="#" style="display: block;">
+                        <div class="layui-row">
+                            <div class="layui-col-xs3">
+                                <div class="layui-bg-black" style="display: inline-block; padding: 15px; border-radius: 50%;">
+                                    <i class="layui-icon layui-icon-shield" style="font-size: 32px; color: #fff;"></i>
+                                </div>
+                            </div>
+                            <div class="layui-col-xs9">
+                                <h3 class="layui-card-title">安全设置</h3>
+                                <p class="layui-text-gray">配置系统安全参数和防护措施</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 数据备份 -->
+        <div class="layui-col-xs12 layui-col-sm6 layui-col-md4">
+            <div class="layui-card layadmin-card-list">
+                <div class="layui-card-body">
+                    <a href="#" style="display: block;">
+                        <div class="layui-row">
+                            <div class="layui-col-xs3">
+                                <div class="layui-bg-cyan" style="display: inline-block; padding: 15px; border-radius: 50%;">
+                                    <i class="layui-icon layui-icon-download-circle" style="font-size: 32px; color: #fff;"></i>
+                                </div>
+                            </div>
+                            <div class="layui-col-xs9">
+                                <h3 class="layui-card-title">数据备份</h3>
+                                <p class="layui-text-gray">备份和恢复系统数据</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 系统监控 -->
+        <div class="layui-col-xs12 layui-col-sm6 layui-col-md4">
+            <div class="layui-card layadmin-card-list">
+                <div class="layui-card-body">
+                    <a href="#" style="display: block;">
+                        <div class="layui-row">
+                            <div class="layui-col-xs3">
+                                <div class="layui-bg-yellow" style="display: inline-block; padding: 15px; border-radius: 50%;">
+                                    <i class="layui-icon layui-icon-chart" style="font-size: 32px; color: #fff;"></i>
+                                </div>
+                            </div>
+                            <div class="layui-col-xs9">
+                                <h3 class="layui-card-title">系统监控</h3>
+                                <p class="layui-text-gray">监控系统运行状态和性能</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 更新升级 -->
+        <div class="layui-col-xs12 layui-col-sm6 layui-col-md4">
+            <div class="layui-card layadmin-card-list">
+                <div class="layui-card-body">
+                    <a href="#" style="display: block;">
+                        <div class="layui-row">
+                            <div class="layui-col-xs3">
+                                <div class="layui-bg-gray" style="display: inline-block; padding: 15px; border-radius: 50%;">
+                                    <i class="layui-icon layui-icon-refresh-3" style="font-size: 32px; color: #fff;"></i>
+                                </div>
+                            </div>
+                            <div class="layui-col-xs9">
+                                <h3 class="layui-card-title">更新升级</h3>
+                                <p class="layui-text-gray">检查系统更新和升级系统版本</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* 卡片悬停效果 */
+        .layadmin-card-list {
+            transition: all 0.3s;
+        }
+        
+        .layadmin-card-list:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .layadmin-card-list a {
+            color: inherit;
+        }
+        
+        .layadmin-card-list a:hover {
+            text-decoration: none;
+        }
+    </style>
+{% endblock %}

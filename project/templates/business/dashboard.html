@@ -1,0 +1,376 @@
+{% extends 'base.html' %}
+
+{% block title %}业务仪表盘 - {{ app_config.app_name }}{% endblock %}
+
+{% block content %}
+<div class="layui-fluid">
+    <!-- 页面标题 -->
+    <div class="layui-row">
+        <div class="layui-col-xs12">
+            <div class="layui-card">
+                <div class="layui-card-header">
+                    <h2 class="layui-card-title"><i class="layui-icon layui-icon-dashboard"></i> 业务仪表盘</h2>
+                    <div class="layui-card-header-tool">
+                        <span class="layui-badge layui-bg-blue">实时数据</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 统计卡片 -->
+    <div class="layui-row layui-col-space15" style="margin-top: 15px;">
+        <div class="layui-col-xs12 layui-col-sm6 layui-col-md3">
+            <div class="layui-card layadmin-card-list">
+                <div class="layui-card-body">
+                    <div class="layui-row">
+                        <div class="layui-col-xs8">
+                            <p class="layui-text-gray">总用户数</p>
+                            <h3 class="layui-text-primary" style="font-size: 28px; font-weight: bold; margin: 5px 0;">1,234</h3>
+                            <p class="layui-text-gray layui-font-12">
+                                <i class="layui-icon layui-icon-rise" style="color: #5FB878;"></i>
+                                <span style="color: #5FB878;">8.2%</span> 较上月
+                            </p>
+                        </div>
+                        <div class="layui-col-xs4 text-right">
+                            <div class="layui-bg-blue" style="display: inline-block; padding: 15px; border-radius: 50%;">
+                                <i class="layui-icon layui-icon-user" style="font-size: 32px; color: #fff;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="layui-col-xs12 layui-col-sm6 layui-col-md3">
+            <div class="layui-card layadmin-card-list">
+                <div class="layui-card-body">
+                    <div class="layui-row">
+                        <div class="layui-col-xs8">
+                            <p class="layui-text-gray">今日新增</p>
+                            <h3 class="layui-text-success" style="font-size: 28px; font-weight: bold; margin: 5px 0;">45</h3>
+                            <p class="layui-text-gray layui-font-12">
+                                <i class="layui-icon layui-icon-rise" style="color: #5FB878;"></i>
+                                <span style="color: #5FB878;">12.5%</span> 较昨日
+                            </p>
+                        </div>
+                        <div class="layui-col-xs4 text-right">
+                            <div class="layui-bg-green" style="display: inline-block; padding: 15px; border-radius: 50%;">
+                                <i class="layui-icon layui-icon-add-circle" style="font-size: 32px; color: #fff;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="layui-col-xs12 layui-col-sm6 layui-col-md3">
+            <div class="layui-card layadmin-card-list">
+                <div class="layui-card-body">
+                    <div class="layui-row">
+                        <div class="layui-col-xs8">
+                            <p class="layui-text-gray">活跃用户</p>
+                            <h3 class="layui-text-orange" style="font-size: 28px; font-weight: bold; margin: 5px 0;">890</h3>
+                            <p class="layui-text-gray layui-font-12">
+                                <i class="layui-icon layui-icon-fall" style="color: #FFB800;"></i>
+                                <span style="color: #FFB800;">2.3%</span> 较昨日
+                            </p>
+                        </div>
+                        <div class="layui-col-xs4 text-right">
+                            <div class="layui-bg-orange" style="display: inline-block; padding: 15px; border-radius: 50%;">
+                                <i class="layui-icon layui-icon-refresh" style="font-size: 32px; color: #fff;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-col-xs12 layui-col-sm6 layui-col-md3">
+            <div class="layui-card layadmin-card-list">
+                <div class="layui-card-body">
+                    <div class="layui-row">
+                        <div class="layui-col-xs8">
+                            <p class="layui-text-gray">订单总额</p>
+                            <h3 class="layui-text-danger" style="font-size: 28px; font-weight: bold; margin: 5px 0;">¥12,580</h3>
+                            <p class="layui-text-gray layui-font-12">
+                                <i class="layui-icon layui-icon-rise" style="color: #5FB878;"></i>
+                                <span style="color: #5FB878;">15.7%</span> 较上周
+                            </p>
+                        </div>
+                        <div class="layui-col-xs4 text-right">
+                            <div class="layui-bg-red" style="display: inline-block; padding: 15px; border-radius: 50%;">
+                                <i class="layui-icon layui-icon-rmb" style="font-size: 32px; color: #fff;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 数据图表 -->
+    <div class="layui-row layui-col-space15" style="margin-top: 15px;">
+        <div class="layui-col-xs12 layui-col-sm12 layui-col-md6">
+            <div class="layui-card">
+                <div class="layui-card-header">
+                    <h3 class="layui-card-title"><i class="layui-icon layui-icon-line"></i> 用户增长趋势</h3>
+                    <div class="layui-card-header-tool">
+                        <a href="#" class="layui-btn layui-btn-primary layui-btn-xs">查看详情</a>
+                    </div>
+                </div>
+                <div class="layui-card-body">
+                    <div id="user-growth-chart" style="height: 350px;"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="layui-col-xs12 layui-col-sm12 layui-col-md6">
+            <div class="layui-card">
+                <div class="layui-card-header">
+                    <h3 class="layui-card-title"><i class="layui-icon layui-icon-pie-chart"></i> 用户地域分布</h3>
+                    <div class="layui-card-header-tool">
+                        <a href="#" class="layui-btn layui-btn-primary layui-btn-xs">查看详情</a>
+                    </div>
+                </div>
+                <div class="layui-card-body">
+                    <div id="user-distribution-chart" style="height: 350px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 最近活动 -->
+    <div class="layui-row" style="margin-top: 15px;">
+        <div class="layui-col-xs12">
+            <div class="layui-card">
+                <div class="layui-card-header">
+                    <h3 class="layui-card-title"><i class="layui-icon layui-icon-time"></i> 最近活动</h3>
+                    <div class="layui-card-header-tool">
+                        <a href="#" class="layui-btn layui-btn-primary layui-btn-xs">查看全部</a>
+                    </div>
+                </div>
+                <div class="layui-card-body">
+                    <table class="layui-table layui-table-hover layui-table-striped" lay-skin="line">
+                        <thead>
+                            <tr>
+                                <th style="width: 180px;">时间</th>
+                                <th style="width: 120px;">用户</th>
+                                <th>操作</th>
+                                <th style="width: 120px;">状态</th>
+                                <th style="width: 150px;">IP地址</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>2023-05-20 14:30</td>
+                                <td><a href="#" class="layui-text-blue">张三</a></td>
+                                <td>
+                                    <i class="layui-icon layui-icon-enter layui-text-green"></i>
+                                    <span>登录系统</span>
+                                </td>
+                                <td><span class="layui-badge layui-bg-green">成功</span></td>
+                                <td>192.168.1.100</td>
+                            </tr>
+                            <tr>
+                                <td>2023-05-20 14:25</td>
+                                <td><a href="#" class="layui-text-blue">李四</a></td>
+                                <td>
+                                    <i class="layui-icon layui-icon-shopping-cart layui-text-blue"></i>
+                                    <span>提交订单</span>
+                                </td>
+                                <td><span class="layui-badge layui-bg-blue">处理中</span></td>
+                                <td>192.168.1.101</td>
+                            </tr>
+                            <tr>
+                                <td>2023-05-20 14:20</td>
+                                <td><a href="#" class="layui-text-blue">王五</a></td>
+                                <td>
+                                    <i class="layui-icon layui-icon-edit layui-text-orange"></i>
+                                    <span>修改个人信息</span>
+                                </td>
+                                <td><span class="layui-badge layui-bg-green">成功</span></td>
+                                <td>192.168.1.102</td>
+                            </tr>
+                            <tr>
+                                <td>2023-05-20 14:15</td>
+                                <td><a href="#" class="layui-text-blue">赵六</a></td>
+                                <td>
+                                    <i class="layui-icon layui-icon-exit layui-text-gray"></i>
+                                    <span>退出系统</span>
+                                </td>
+                                <td><span class="layui-badge layui-bg-gray">完成</span></td>
+                                <td>192.168.1.103</td>
+                            </tr>
+                            <tr>
+                                <td>2023-05-20 14:10</td>
+                                <td><a href="#" class="layui-text-blue">孙七</a></td>
+                                <td>
+                                    <i class="layui-icon layui-icon-delete layui-text-red"></i>
+                                    <span>删除商品</span>
+                                </td>
+                                <td><span class="layui-badge layui-bg-green">成功</span></td>
+                                <td>192.168.1.104</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 初始化图表
+layui.use(['echarts'], function() {
+    var echarts = layui.echarts;
+    
+    // 用户增长趋势图
+    var userGrowthChart = echarts.init(document.getElementById('user-growth-chart'));
+    var userGrowthOption = {
+        color: ['#1E9FFF'],
+        tooltip: {
+            trigger: 'axis',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            borderColor: '#1E9FFF',
+            textStyle: {
+                color: '#fff'
+            },
+            axisPointer: {
+                type: 'cross',
+                label: {
+                    backgroundColor: '#1E9FFF'
+                }
+            }
+        },
+        grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
+        },
+        xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data: ['1月', '2月', '3月', '4月', '5月', '6月'],
+            axisLine: {
+                lineStyle: {
+                    color: '#e6e6e6'
+                }
+            },
+            axisLabel: {
+                color: '#666'
+            }
+        },
+        yAxis: {
+            type: 'value',
+            axisLine: {
+                lineStyle: {
+                    color: '#e6e6e6'
+                }
+            },
+            axisLabel: {
+                color: '#666'
+            },
+            splitLine: {
+                lineStyle: {
+                    color: '#f2f2f2'
+                }
+            }
+        },
+        series: [{
+            name: '用户数',
+            type: 'line',
+            smooth: true,
+            symbol: 'circle',
+            symbolSize: 8,
+            lineStyle: {
+                width: 3
+            },
+            itemStyle: {
+                color: '#1E9FFF',
+                borderWidth: 2,
+                borderColor: '#fff'
+            },
+            areaStyle: {
+                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                    {offset: 0, color: 'rgba(30, 159, 255, 0.3)'},
+                    {offset: 1, color: 'rgba(30, 159, 255, 0.05)'}
+                ])
+            },
+            data: [120, 200, 150, 80, 70, 110]
+        }]
+    };
+    userGrowthChart.setOption(userGrowthOption);
+    
+    // 用户地域分布图
+    var userDistributionChart = echarts.init(document.getElementById('user-distribution-chart'));
+    var userDistributionOption = {
+        color: ['#1E9FFF', '#5FB878', '#FFB800', '#FF5722', '#909399'],
+        tooltip: {
+            trigger: 'item',
+            formatter: '{b}: {c} ({d}%)',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            borderColor: '#1E9FFF',
+            textStyle: {
+                color: '#fff'
+            }
+        },
+        legend: {
+            orient: 'vertical',
+            right: 10,
+            top: 'center',
+            textStyle: {
+                color: '#666'
+            }
+        },
+        series: [{
+            name: '用户地域分布',
+            type: 'pie',
+            radius: ['40%', '70%'],
+            center: ['40%', '50%'],
+            avoidLabelOverlap: false,
+            itemStyle: {
+                borderRadius: 10,
+                borderColor: '#fff',
+                borderWidth: 2
+            },
+            label: {
+                show: false,
+                position: 'center'
+            },
+            emphasis: {
+                label: {
+                    show: true,
+                    fontSize: '18',
+                    fontWeight: 'bold',
+                    color: '#333'
+                },
+                itemStyle: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.3)'
+                }
+            },
+            labelLine: {
+                show: false
+            },
+            data: [
+                {value: 335, name: '北京'},
+                {value: 310, name: '上海'},
+                {value: 234, name: '广州'},
+                {value: 135, name: '深圳'},
+                {value: 1548, name: '其他'}
+            ]
+        }]
+    };
+    userDistributionChart.setOption(userDistributionOption);
+    
+    // 响应式处理
+    window.addEventListener('resize', function() {
+        userGrowthChart.resize();
+        userDistributionChart.resize();
+    });
+});
+</script>
+{% endblock %}

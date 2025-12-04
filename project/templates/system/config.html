@@ -1,0 +1,327 @@
+{% extends 'base.html' %}
+
+{% block title %}系统设置 - {{ app_config.app_name }}{% endblock %}
+
+{% block content %}
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-header">
+            <i class="layui-icon layui-icon-set"></i> 系统设置
+        </div>
+        <div class="layui-card-body">
+            <!-- 选项卡 -->
+            <div class="layui-tab layui-tab-brief" lay-filter="system-config-tabs">
+                <ul class="layui-tab-title">
+                    <li class="layui-this">
+                        <i class="layui-icon layui-icon-home"></i> 基本设置
+                    </li>
+                    <li>
+                        <i class="layui-icon layui-icon-picture"></i> LOGO设置
+                    </li>
+                </ul>
+                <div class="layui-tab-content">
+                    <!-- 基本设置 -->
+                    <div class="layui-tab-item layui-show">
+                        <form class="layui-form" id="basic-config-form">
+                            <!-- 应用名称 -->
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">应用名称</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="app_name" value="{{ app_config.app_name }}" placeholder="请输入应用名称" autocomplete="off" class="layui-input" required lay-verify="required|appName">
+                                    <div class="layui-form-mid layui-word-aux">网站显示的名称</div>
+                                </div>
+                            </div>
+                            
+                            <!-- 应用描述 -->
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">应用描述</label>
+                                <div class="layui-input-block">
+                                    <textarea name="app_description" placeholder="请输入应用描述" class="layui-textarea" rows="3">{{ app_config.app_description }}</textarea>
+                                    <div class="layui-form-mid layui-word-aux">网站的简短介绍</div>
+                                </div>
+                            </div>
+                            
+                            <!-- 版权信息 -->
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">版权信息</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="copyright_info" value="{{ app_config.copyright_info }}" placeholder="请输入版权信息" autocomplete="off" class="layui-input">
+                                    <div class="layui-form-mid layui-word-aux">如：© 2025 我的网站</div>
+                                </div>
+                            </div>
+                            
+                            <!-- 备案号 -->
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">备案号</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="icp_code" value="{{ app_config.icp_code }}" placeholder="请输入备案号" autocomplete="off" class="layui-input">
+                                    <div class="layui-form-mid layui-word-aux">网站的ICP备案编号</div>
+                                </div>
+                            </div>
+                            
+                            <div class="layui-form-item layui-form-text">
+                                <div class="layui-input-block">
+                                    <button class="layui-btn layui-btn-primary layui-border-blue" id="save-basic-config" type="button">
+                                        <i class="layui-icon layui-icon-save"></i> 保存设置
+                                    </button>
+                                    <button class="layui-btn layui-btn-primary" id="reset-basic-config" type="button">
+                                        <i class="layui-icon layui-icon-refresh"></i> 重置
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- LOGO设置 -->
+                    <div class="layui-tab-item">
+                        <div class="layui-upload">
+                            <div class="layui-upload-list" style="margin-bottom: 20px;">
+                                <div class="logo-preview-container">
+                                    <img class="layui-upload-img" id="logo-preview" style="max-width: 250px; max-height: 120px;" {% if app_config.logo_path %}src="{{ app_config.logo_path }}"{% else %}src="{{ url_for('static', filename='images/default-logo.png') }}"{% endif %}>
+                                </div>
+                                <p id="logo-text" style="margin-top: 10px;"></p>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">上传LOGO</label>
+                                <div class="layui-input-block">
+                                    <div class="layui-upload-button-container">
+                                        <button type="button" class="layui-btn" id="logo-upload">
+                                            <i class="layui-icon layui-icon-upload"></i> 选择图片
+                                        </button>
+                                        <div class="layui-form-mid layui-word-aux">支持JPG、PNG格式，建议尺寸200x80像素</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="layui-form-item" style="margin-top: 30px;">
+                                <div class="layui-input-block">
+                                    <button class="layui-btn layui-btn-primary layui-border-blue" id="save-logo" type="button">
+                                        <i class="layui-icon layui-icon-save"></i> 保存LOGO
+                                    </button>
+                                    {% if app_config.logo_path %}
+                                    <button class="layui-btn layui-btn-primary layui-border-red" id="delete-logo" type="button">
+                                        <i class="layui-icon layui-icon-delete"></i> 删除LOGO
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 初始化上传组件
+layui.use(['upload', 'form', 'layer', 'element'], function(){  
+    var upload = layui.upload;
+    var layer = layui.layer;
+    var form = layui.form;
+    var element = layui.element;
+    
+    // 存储当前上传的logo路径
+    var currentLogoPath = '{{ app_config.logo_url or "" }}';
+    var originalLogoPath = currentLogoPath;
+    var originalFormData = form.val('basic-config-form');
+    
+    // 自定义验证规则
+    form.verify({
+        appName: function(value){
+            if(value.length > 20){
+                return '应用名称不能超过20个字符';
+            }
+        }
+    });
+    
+    // 执行上传
+    var uploadInst = upload.render({
+        elem: '#logo-upload',
+        url: '/api/upload/logo',
+        accept: 'images',
+        acceptMime: 'image/jpeg,image/png',
+        exts: 'jpg|png',
+        size: 2048, // 最大2MB
+        field: 'file', // API期望的字段名是'file'
+        before: function(obj){
+            // 预览
+            $('#logo-text').html('<span style="color: #666;">上传中...</span>');
+            obj.preview(function(index, file, result){  
+                $('#logo-preview').attr('src', result);
+                // 图片加载动画
+                $('#logo-preview').css('opacity', '0.6');
+            });
+        },
+        done: function(res){  
+            // 上传成功
+            $('#logo-preview').css('opacity', '1');
+            if(res.code == 0){
+                currentLogoPath = res.data.file_url; // API返回的是'file_url'
+                $('#logo-text').html('<span style="color: #67c23a;">上传成功！</span>');
+                // 如果之前没有LOGO，显示删除按钮
+                if(!$('#delete-logo').length){
+                    $('#save-logo').after('<button class="layui-btn layui-btn-primary layui-border-red" id="delete-logo" type="button">
+                        <i class="layui-icon layui-icon-delete"></i> 删除LOGO
+                    </button>');
+                    bindDeleteLogoEvent();
+                }
+            } else {
+                $('#logo-text').html('<span style="color: #f56c6c;">上传失败：'+res.msg+'</span>');
+            }
+        },
+        error: function(index, upload){  
+            $('#logo-preview').css('opacity', '1');
+            $('#logo-text').html('<span style="color: #f56c6c;">上传失败，请重试</span>');
+        }
+    });
+    
+    // 保存基本配置
+    $('#save-basic-config').click(function(){  
+        if(!form.validate('#basic-config-form')){
+            return;
+        }
+        
+        var formData = form.val('basic-config-form');
+        
+        // 检查是否有变化
+        if(JSON.stringify(formData) === JSON.stringify(originalFormData)){
+            layer.msg('未做任何修改', {icon: 3});
+            return;
+        }
+        
+        var btn = $(this);
+        btn.attr('disabled', true).addClass('layui-btn-disabled');
+        
+        $.ajax({
+            url: '/api/config/basic',
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            success: function(res){
+                if(res.code == 0){
+                    layer.msg('基本配置保存成功！', {icon: 1, time: 1500}, function(){
+                        // 更新原始数据
+                        originalFormData = form.val('basic-config-form');
+                    });
+                } else {
+                    layer.msg('保存失败：'+res.msg, {icon: 2});
+                }
+            },
+            error: function(){
+                layer.msg('保存失败，请重试', {icon: 2});
+            },
+            complete: function(){
+                btn.attr('disabled', false).removeClass('layui-btn-disabled');
+            }
+        });
+    });
+    
+    // 重置基本配置
+    $('#reset-basic-config').click(function(){  
+        layer.confirm('确定要重置所有基本配置吗？', {
+            icon: 3,
+            title: '确认重置'
+        }, function(index){  
+            form.val('basic-config-form', originalFormData);
+            layer.msg('已重置', {icon: 1});
+            layer.close(index);
+        });
+    });
+    
+    // 保存LOGO设置
+    $('#save-logo').click(function(){  
+        if(!currentLogoPath){
+            layer.msg('请先上传LOGO', {icon: 3});
+            return;
+        }
+        
+        // 检查是否有变化
+        if(currentLogoPath === originalLogoPath){
+            layer.msg('未做任何修改', {icon: 3});
+            return;
+        }
+        
+        var btn = $(this);
+        btn.attr('disabled', true).addClass('layui-btn-disabled');
+        
+        $.ajax({
+            url: '/api/config/logo',
+            type: 'PUT',
+            data: {logo_url: currentLogoPath},
+            success: function(res){
+                if(res.code == 0){
+                    layer.msg('LOGO设置保存成功！', {icon: 1, time: 1500}, function(){
+                        // 更新原始数据
+                        originalLogoPath = currentLogoPath;
+                    });
+                } else {
+                    layer.msg('保存失败：'+res.msg, {icon: 2});
+                }
+            },
+            error: function(){
+                layer.msg('保存失败，请重试', {icon: 2});
+            },
+            complete: function(){
+                btn.attr('disabled', false).removeClass('layui-btn-disabled');
+            }
+        });
+    });
+    
+    // 删除LOGO
+    function bindDeleteLogoEvent(){
+        $('#delete-logo').click(function(){  
+            layer.confirm('确定要删除当前LOGO吗？', {
+                icon: 3,
+                title: '确认删除'
+            }, function(index){  
+                currentLogoPath = '';
+                $('#logo-preview').attr('src', '{{ url_for('static', filename='images/default-logo.png') }}');
+                $('#logo-text').html('');
+                $('#delete-logo').remove();
+                layer.msg('LOGO已删除', {icon: 1});
+                layer.close(index);
+            });
+        });
+    }
+    
+    // 初始绑定删除LOGO事件
+    bindDeleteLogoEvent();
+});
+</script>
+
+<style>
+/* 自定义样式增强 */
+.logo-preview-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 250px;
+    height: 120px;
+    background-color: #fafafa;
+    border: 1px dashed #e6e6e6;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    transition: all 0.3s;
+}
+
+.logo-preview-container:hover {
+    border-color: #1e9fff;
+    background-color: #f0f9ff;
+}
+
+.layui-upload-button-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.layui-card-header .layui-icon {
+    margin-right: 5px;
+    color: #1e9fff;
+}
+
+.layui-tab-title .layui-icon {
+    margin-right: 3px;
+}
+</style>
+{% endblock %}

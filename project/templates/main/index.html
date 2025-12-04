@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block title %}首页{% endblock %}
+
+{% block header %}舆情分析系统{% endblock %}
+
+{% block content %}
+    <div class="layui-card hero-card">
+        <div class="layui-card-body">
+            <div class="hero">
+                <div class="hero-content">
+                    <h2><i class="layui-icon layui-icon-console"></i> 舆情分析系统</h2>
+                    <p>专业的网络舆情监测与分析平台，为您提供实时、全面的舆情数据服务。</p>
+                    <div class="hero-buttons">
+                        {% if not current_user.is_authenticated %}
+                            <a href="{{ url_for('auth.login') }}" class="layui-btn layui-btn-lg layui-btn-primary">
+                                <i class="layui-icon layui-icon-username"></i> 登录
+                            </a>
+                            <a href="{{ url_for('auth.register') }}" class="layui-btn layui-btn-lg">
+                                <i class="layui-icon layui-icon-add-circle"></i> 注册
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('business.dashboard') }}" class="layui-btn layui-btn-lg">
+                                <i class="layui-icon layui-icon-dashboard"></i> 进入系统
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="features-container">
+        <h3 class="features-title">核心功能</h3>
+        <div class="layui-row layui-col-space30">
+            <div class="layui-col-md4">
+                <div class="layui-card feature-card">
+                    <div class="layui-card-header">
+                        <i class="layui-icon layui-icon-user"></i> 用户认证
+                    </div>
+                    <div class="layui-card-body">
+                        <p>完善的用户注册、登录和权限管理系统，确保用户身份安全可靠，支持灵活的权限配置。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-col-md4">
+                <div class="layui-card feature-card">
+                    <div class="layui-card-header">
+                        <i class="layui-icon layui-icon-clipboard"></i> 业务管理
+                    </div>
+                    <div class="layui-card-body">
+                        <p>灵活的业务数据管理和报表生成功能，支持多种数据操作，提高工作效率和数据可视化能力。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-col-md4">
+                <div class="layui-card feature-card">
+                    <div class="layui-card-header">
+                        <i class="layui-icon layui-icon-set"></i> 系统设置
+                    </div>
+                    <div class="layui-card-body">
+                        <p>便捷的系统参数配置和用户权限管理，支持自定义系统设置，满足不同业务场景需求。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block css %}
+    <style>
+        /* 首页样式优化 */
+        .hero-card {
+            margin-top: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .hero {
+            text-align: center;
+            padding: 60px 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 8px;
+        }
+        
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .hero h2 {
+            font-size: 36px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        .hero h2 .layui-icon {
+            margin-right: 10px;
+            color: #1E9FFF;
+            font-size: 40px;
+        }
+        
+        .hero p {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 40px;
+            line-height: 1.6;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+        
+        .hero-buttons {
+            margin-top: 30px;
+            animation: fadeInUp 0.8s ease-out 0.4s both;
+        }
+        
+        .hero-buttons .layui-btn {
+            margin: 0 10px;
+            padding: 0 30px;
+            height: 48px;
+            line-height: 48px;
+            font-size: 16px;
+            font-weight: 500;
+            border-radius: 24px;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .hero-buttons .layui-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(30, 159, 255, 0.3);
+        }
+        
+        .hero-buttons .layui-btn-primary {
+            background-color: #fff;
+            color: #1E9FFF;
+            border: 2px solid #1E9FFF;
+        }
+        
+        .hero-buttons .layui-btn-primary:hover {
+            background-color: #1E9FFF;
+            color: #fff;
+        }
+        
+        .features-container {
+            margin-top: 60px;
+        }
+        
+        .features-title {
+            text-align: center;
+            font-size: 28px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 40px;
+            position: relative;
+        }
+        
+        .features-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: #1E9FFF;
+            border-radius: 2px;
+        }
+        
+        .feature-card {
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: none;
+            overflow: hidden;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .feature-card .layui-card-header {
+            background: linear-gradient(135deg, #1E9FFF 0%, #009688 100%);
+            color: #fff;
+            font-size: 18px;
+            font-weight: 500;
+            padding: 20px;
+        }
+        
+        .feature-card .layui-card-header .layui-icon {
+            margin-right: 8px;
+            font-size: 20px;
+        }
+        
+        .feature-card .layui-card-body {
+            padding: 30px 20px;
+            font-size: 15px;
+            color: #666;
+            line-height: 1.7;
+        }
+        
+        /* 动画效果 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .hero {
+                padding: 40px 15px;
+            }
+            
+            .hero h2 {
+                font-size: 28px;
+            }
+            
+            .hero h2 .layui-icon {
+                font-size: 32px;
+            }
+            
+            .hero p {
+                font-size: 16px;
+                margin-bottom: 30px;
+            }
+            
+            .hero-buttons .layui-btn {
+                display: block;
+                margin: 10px auto;
+                width: 200px;
+            }
+            
+            .features-title {
+                font-size: 24px;
+            }
+            
+            .feature-card .layui-card-body {
+                padding: 20px 15px;
+                font-size: 14px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .hero h2 {
+                font-size: 24px;
+            }
+            
+            .hero-buttons .layui-btn {
+                width: 100%;
+                max-width: 250px;
+            }
+        }
+    </style>
+{% endblock %}

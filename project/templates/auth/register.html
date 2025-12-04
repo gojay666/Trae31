@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+
+{% block title %}用户注册{% endblock %}
+
+{% block header %}{% endblock %}
+
+{% block content %}
+    <div class="register-container">
+        <div class="register-box">
+            <h2 class="register-title">
+                <i class="layui-icon layui-icon-add-circle"></i> 用户注册
+            </h2>
+            <form class="layui-form" method="POST" action="{{ url_for('auth.register') }}">
+                {{ form.hidden_tag() }}
+                
+                <!-- 用户名 -->
+                <div class="layui-form-item">
+                    <div class="layui-input-wrap">
+                        <div class="layui-input-prefix">
+                            <i class="layui-icon layui-icon-username"></i>
+                        </div>
+                        {{ form.username(class="layui-input", placeholder="请输入用户名", autocomplete="off") }}
+                    </div>
+                    {% for error in form.username.errors %}
+                        <div class="form-error">
+                            <i class="layui-icon layui-icon-close-circle"></i> {{ error }}
+                        </div>
+                    {% endfor %}
+                    <div class="form-tip">
+                        <i class="layui-icon layui-icon-tips"></i> 用户名长度为3-20个字符
+                    </div>
+                </div>
+                
+                <!-- 邮箱 -->
+                <div class="layui-form-item">
+                    <div class="layui-input-wrap">
+                        <div class="layui-input-prefix">
+                            <i class="layui-icon layui-icon-mail"></i>
+                        </div>
+                        {{ form.email(class="layui-input", placeholder="请输入邮箱", autocomplete="off") }}
+                    </div>
+                    {% for error in form.email.errors %}
+                        <div class="form-error">
+                            <i class="layui-icon layui-icon-close-circle"></i> {{ error }}
+                        </div>
+                    {% endfor %}
+                    <div class="form-tip">
+                        <i class="layui-icon layui-icon-tips"></i> 请输入有效的邮箱地址
+                    </div>
+                </div>
+                
+                <!-- 密码 -->
+                <div class="layui-form-item">
+                    <div class="layui-input-wrap">
+                        <div class="layui-input-prefix">
+                            <i class="layui-icon layui-icon-password"></i>
+                        </div>
+                        {{ form.password(class="layui-input", id="password", placeholder="请输入密码", autocomplete="off", type="password") }}
+                        <div class="layui-input-suffix">
+                            <button type="button" class="layui-icon layui-icon-eye" id="togglePassword" style="background: none; border: none; cursor: pointer;"></button>
+                        </div>
+                    </div>
+                    {% for error in form.password.errors %}
+                        <div class="form-error">
+                            <i class="layui-icon layui-icon-close-circle"></i> {{ error }}
+                        </div>
+                    {% endfor %}
+                    <div class="form-tip">
+                        <i class="layui-icon layui-icon-tips"></i> 密码长度至少为6个字符
+                    </div>
+                </div>
+                
+                <!-- 确认密码 -->
+                <div class="layui-form-item">
+                    <div class="layui-input-wrap">
+                        <div class="layui-input-prefix">
+                            <i class="layui-icon layui-icon-password"></i>
+                        </div>
+                        {{ form.confirm_password(class="layui-input", id="confirmPassword", placeholder="请再次输入密码", autocomplete="off", type="password") }}
+                        <div class="layui-input-suffix">
+                            <button type="button" class="layui-icon layui-icon-eye" id="toggleConfirmPassword" style="background: none; border: none; cursor: pointer;"></button>
+                        </div>
+                    </div>
+                    {% for error in form.confirm_password.errors %}
+                        <div class="form-error">
+                            <i class="layui-icon layui-icon-close-circle"></i> {{ error }}
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- 注册按钮 -->
+                <div class="layui-form-item">
+                    {{ form.submit(class="layui-btn layui-btn-normal layui-btn-block login-btn") }}
+                </div>
+            </form>
+            
+            <!-- 已有账号 -->
+            <div class="form-footer">
+                <p>已有账号？<a href="{{ url_for('auth.login') }}" class="register-link">立即登录</a></p>
+            </div>
+        </div>
+    </div>
+    
+    <style>
+        /* 页面背景渐变 */
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
+        }
+        
+        /* 注册容器 */
+        .register-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 180px);
+        }
+        
+        /* 注册框 */
+        .register-box {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        /* 注册标题 */
+        .register-title {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 24px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .register-title i {
+            color: #1e9fff;
+            margin-right: 10px;
+            font-size: 28px;
+        }
+        
+        /* 表单样式 */
+        .layui-form-item {
+            margin-bottom: 20px;
+        }
+        
+        .layui-input-wrap {
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .layui-input {
+            height: 46px;
+            border: 1px solid #e6e6e6;
+            border-radius: 4px;
+            padding: 0 15px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .layui-input:focus {
+            border-color: #1e9fff;
+            box-shadow: 0 0 0 2px rgba(30, 159, 255, 0.2);
+        }
+        
+        .layui-input-prefix {
+            color: #999;
+        }
+        
+        /* 错误信息 */
+        .form-error {
+            color: #ff6b6b;
+            font-size: 12px;
+            margin-top: 5px;
+            padding-left: 20px;
+        }
+        
+        .form-error i {
+            margin-right: 5px;
+        }
+        
+        /* 表单提示 */
+        .form-tip {
+            color: #999;
+            font-size: 12px;
+            margin-top: 5px;
+            padding-left: 20px;
+        }
+        
+        .form-tip i {
+            margin-right: 5px;
+        }
+        
+        /* 登录按钮 */
+        .login-btn {
+            height: 46px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 4px;
+            background: linear-gradient(135deg, #1e9fff 0%, #1890ff 100%);
+            border: none;
+            transition: all 0.3s;
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(30, 159, 255, 0.4);
+        }
+        
+        /* 表单底部 */
+        .form-footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #999;
+        }
+        
+        .register-link {
+            color: #1e9fff;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .register-link:hover {
+            text-decoration: underline;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .register-box {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .register-title {
+                font-size: 20px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .register-box {
+                padding: 15px;
+            }
+            
+            .layui-input {
+                height: 42px;
+            }
+            
+            .login-btn {
+                height: 42px;
+                font-size: 14px;
+            }
+        }
+    </style>
+    
+    <script>
+        // 密码显示/隐藏功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const togglePassword = document.getElementById('togglePassword');
+            const password = document.getElementById('password');
+            
+            const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
+            const confirmPassword = document.getElementById('confirmPassword');
+            
+            // 切换密码显示
+            togglePassword.addEventListener('click', function() {
+                const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+                password.setAttribute('type', type);
+                
+                // 切换图标
+                this.className = type === 'password' ? 'layui-icon layui-icon-eye' : 'layui-icon layui-icon-eye-off';
+            });
+            
+            // 切换确认密码显示
+            toggleConfirmPassword.addEventListener('click', function() {
+                const type = confirmPassword.getAttribute('type') === 'password' ? 'text' : 'password';
+                confirmPassword.setAttribute('type', type);
+                
+                // 切换图标
+                this.className = type === 'password' ? 'layui-icon layui-icon-eye' : 'layui-icon layui-icon-eye-off';
+            });
+            
+            // 表单验证
+            const form = document.querySelector('form');
+            const inputs = form.querySelectorAll('.layui-input');
+            
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentNode.style.boxShadow = '0 0 0 2px rgba(30, 159, 255, 0.2)';
+                });
+                
+                input.addEventListener('blur', function() {
+                    this.parentNode.style.boxShadow = 'none';
+                });
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,176 @@
+/* 全局样式 */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Microsoft YaHei', Arial, sans-serif;
+    background-color: #f5f7fa;
+}
+
+/* 头部样式 */
+.layui-header {
+    background-color: #393D49;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.layui-logo {
+    color: #fff;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* 主要内容区域 */
+.main-content {
+    padding: 20px 0;
+}
+
+/* 卡片样式 */
+.layui-card {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.layui-card-header {
+    font-size: 16px;
+    font-weight: bold;
+    padding: 12px 20px;
+}
+
+/* 表单样式 */
+.layui-form-item {
+    margin-bottom: 20px;
+}
+
+.layui-form-label {
+    font-weight: bold;
+}
+
+.layui-input, .layui-textarea {
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.layui-input:focus, .layui-textarea:focus {
+    border-color: #1E9FFF;
+    box-shadow: 0 0 0 2px rgba(30, 159, 255, 0.2);
+}
+
+/* 按钮样式 */
+.layui-btn {
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+/* 页脚样式 */
+.layui-footer {
+    background-color: #393D49;
+    color: #fff;
+    padding: 20px 0;
+    margin-top: 40px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    /* 头部导航 */
+    .layui-header .layui-nav {
+        display: none;
+    }
+    
+    /* 主要内容区域 */
+    .main-content {
+        padding: 10px;
+    }
+    
+    /* 卡片样式 */
+    .layui-card {
+        margin-bottom: 15px;
+    }
+    
+    .layui-card-header {
+        padding: 10px 15px;
+        font-size: 14px;
+    }
+    
+    /* 表单样式 */
+    .layui-form-item {
+        margin-bottom: 15px;
+    }
+    
+    .layui-form-label {
+        width: 80px;
+        padding: 9px 5px;
+        font-size: 14px;
+    }
+    
+    .layui-input-block {
+        margin-left: 80px;
+    }
+    
+    /* 选项卡样式 */
+    .layui-tab-title li {
+        padding: 0 10px;
+        font-size: 14px;
+    }
+    
+    /* LOGO预览 */
+    .layui-upload-img {
+        max-width: 150px;
+        max-height: 75px;
+    }
+}
+
+@media (max-width: 480px) {
+    /* 表单样式 */
+    .layui-form-label {
+        width: 70px;
+        font-size: 13px;
+    }
+    
+    .layui-input-block {
+        margin-left: 70px;
+    }
+    
+    .layui-input, .layui-textarea {
+        font-size: 13px;
+    }
+    
+    /* 选项卡样式 */
+    .layui-tab-title li {
+        padding: 0 8px;
+        font-size: 13px;
+    }
+    
+    /* 按钮样式 */
+    .layui-btn {
+        padding: 0 15px;
+        font-size: 13px;
+    }
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.layui-card {
+    animation: fadeIn 0.5s ease;
+}
+
+/* 错误提示样式 */
+.layui-form-danger:focus {
+    border-color: #FF5722 !important;
+    box-shadow: 0 0 0 2px rgba(255, 87, 34, 0.2) !important;
+}
+
+/* 成功提示样式 */
+.layui-form-success:focus {
+    border-color: #5FB878 !important;
+    box-shadow: 0 0 0 2px rgba(95, 184, 120, 0.2) !important;
+}

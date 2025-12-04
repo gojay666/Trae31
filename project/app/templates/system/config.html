@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="layui-fluid">
+  <div class="layui-card">
+    <div class="layui-card-header">
+      <h2>系统设置</h2>
+    </div>
+    <div class="layui-card-body">
+      <div class="layui-tab layui-tab-brief" lay-filter="systemConfigTab">
+        <ul class="layui-tab-title">
+          <li class="layui-this">基本设置</li>
+          <li>LOGO设置</li>
+        </ul>
+        <div class="layui-tab-content">
+          <!-- 基本设置 -->
+          <div class="layui-tab-item layui-show">
+            <form class="layui-form" id="basicConfigForm" lay-filter="basicConfigForm">
+              <div class="layui-form-item">
+                <label class="layui-form-label">应用名称</label>
+                <div class="layui-input-block">
+                  <input type="text" name="app_name" required lay-verify="required" placeholder="请输入应用名称" autocomplete="off" class="layui-input">
+                </div>
+              </div>
+              <div class="layui-form-item">
+                <label class="layui-form-label">应用描述</label>
+                <div class="layui-input-block">
+                  <textarea name="app_description" placeholder="请输入应用描述" class="layui-textarea"></textarea>
+                </div>
+              </div>
+              <div class="layui-form-item">
+                <label class="layui-form-label">版权信息</label>
+                <div class="layui-input-block">
+                  <input type="text" name="copyright" placeholder="请输入版权信息" autocomplete="off" class="layui-input">
+                </div>
+              </div>
+              <div class="layui-form-item">
+                <label class="layui-form-label">备案号</label>
+                <div class="layui-input-block">
+                  <input type="text" name="icp" placeholder="请输入备案号" autocomplete="off" class="layui-input">
+                </div>
+              </div>
+              <div class="layui-form-item">
+                <div class="layui-input-block">
+                  <button class="layui-btn" lay-submit lay-filter="basicConfigSubmit">保存设置</button>
+                  <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+              </div>
+            </form>
+          </div>
+          
+          <!-- LOGO设置 -->
+          <div class="layui-tab-item">
+            <form class="layui-form" id="logoConfigForm" lay-filter="logoConfigForm">
+              <div class="layui-form-item">
+                <label class="layui-form-label">当前LOGO</label>
+                <div class="layui-input-block">
+                  <div class="logo-preview">
+                    <img id="currentLogo" src="" alt="当前LOGO" style="max-width: 200px; max-height: 100px; border: 1px solid #eee;">
+                  </div>
+                </div>
+              </div>
+              <div class="layui-form-item">
+                <label class="layui-form-label">上传新LOGO</label>
+                <div class="layui-input-block">
+                  <button type="button" class="layui-btn" id="uploadLogo">
+                    <i class="layui-icon layui-icon-upload"></i> 选择图片
+                  </button>
+                  <input type="hidden" name="logo_url" id="logoUrl">
+                  <div class="layui-progress" id="uploadProgress" style="display: none;">
+                    <div class="layui-progress-bar" lay-percent="0%"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="layui-form-item">
+                <div class="layui-input-block">
+                  <button class="layui-btn" lay-submit lay-filter="logoConfigSubmit">保存设置</button>
+                  <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  layui.use(['form', 'layer', 'tab', 'upload', 'progress'], function() {
+    var form = layui.form;
+    var layer = layui.layer;
+    var tab = layui.tab;
+    var upload = layui.upload;
+    var progress = layui.progress;
+    
+    // 加载配置数据
+    loadConfigData();
+    
+    // 基本设置表单提交
+    form.on('submit(basicConfigSubmit)', function(data) {
+      saveBasicConfig(data.field);
+      return false;
+    });
+    
+    // LOGO设置表单提交
+    form.on('submit(logoConfigSubmit)', function(data) {
+      saveLogoConfig(data.field);
+      return false;
+    });
+    
+    // 加载配置数据
+    function loadConfigData() {
+      $.ajax({
+        url: '/api/config',
+        type: 'GET',
+        success: function(res) {
+          if(res.code === 0) {
+            var config = res.data;
+            
+            // 填充基本设置表单
+            form.val('basicConfigForm', {
+              app_name: config.app_name || '',
+              app_description: config.app_description || '',
+              copyright: config.copyright || '',
+              icp: config.icp || ''
+            });
+            
+            // 设置当前LOGO
+            if(config.logo_url) {
+              $('#currentLogo').attr('src', config.logo_url).show();
+            } else {
+              $('#currentLogo').hide();
+            }
+            
+            // 设置LOGO URL
+            $('#logoUrl').val(config.logo_url || '');
+          } else {
+            layer.msg(res.msg || '加载配置失败');
+          }
+        },
+        error: function() {
+          layer.msg('加载配置失败');
+        }
+      });
+    }
+    
+    // 保存基本设置
+    function saveBasicConfig(configData) {
+      $.ajax({
+        url: '/api/config/basic',
+        type: 'PUT',
+        data: configData,
+        success: function(res) {
+          if(res.code === 0) {
+            layer.msg('保存成功', function() {
+              // 重新加载配置数据
+              loadConfigData();
+            });
+          } else {
+            layer.msg(res.msg || '保存失败');
+          }
+        },
+        error: function() {
+          layer.msg('保存失败');
+        }
+      });
+    }
+    
+    // 保存LOGO设置
+    function saveLogoConfig(configData) {
+      $.ajax({
+        url: '/api/config/logo',
+        type: 'PUT',
+        data: configData,
+        success: function(res) {
+          if(res.code === 0) {
+            layer.msg('保存成功', function() {
+              // 重新加载配置数据
+              loadConfigData();
+            });
+          } else {
+            layer.msg(res.msg || '保存失败');
+          }
+        },
+        error: function() {
+          layer.msg('保存失败');
+        }
+      });
+    }
+    
+    // 初始化上传组件
+    upload.render({
+      elem: '#uploadLogo',
+      url: '/api/upload/logo',
+      size: 5120, // 限制5MB
+      accept: 'images',
+      acceptMime: 'image/*',
+      before: function(obj) {
+        // 显示上传进度
+        $('#uploadProgress').show();
+        progress.progress('uploadProgress', 0);
+        
+        // 预读图片
+        obj.preview(function(index, file, result) {
+          $('#currentLogo').attr('src', result).show();
+        });
+      },
+      done: function(res) {
+        // 隐藏上传进度
+        $('#uploadProgress').hide();
+        
+        if(res.code === 0) {
+          layer.msg('上传成功');
+          // 设置LOGO URL
+          $('#logoUrl').val(res.data.logo_url);
+        } else {
+          layer.msg(res.msg || '上传失败');
+          // 恢复原LOGO
+          loadConfigData();
+        }
+      },
+      error: function() {
+        // 隐藏上传进度
+        $('#uploadProgress').hide();
+        layer.msg('上传失败');
+        // 恢复原LOGO
+        loadConfigData();
+      },
+      progress: function(n, elem, e, index) {
+        // 更新上传进度
+        progress.progress('uploadProgress', n + '%');
+      }
+    });
+  });
+</script>
+{% endblock %}

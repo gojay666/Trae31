@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="layui-fluid">
+  <div class="layui-card">
+    <div class="layui-card-header">
+      <h2>角色管理</h2>
+    </div>
+    <div class="layui-card-body">
+      <!-- 角色列表 -->
+      <table class="layui-hide" id="rolesTable" lay-filter="rolesTable"></table>
+    </div>
+  </div>
+</div>
+
+<!-- 角色编辑弹窗 -->
+<div id="roleEditModal" style="display: none;">
+  <form class="layui-form" id="roleEditForm" lay-filter="roleEditForm">
+    <input type="hidden" name="id">
+    <div class="layui-form-item">
+      <label class="layui-form-label">角色名称</label>
+      <div class="layui-input-block">
+        <input type="text" name="name" required  lay-verify="required" placeholder="请输入角色名称" autocomplete="off" class="layui-input">
+      </div>
+    </div>
+    <div class="layui-form-item">
+      <label class="layui-form-label">角色描述</label>
+      <div class="layui-input-block">
+        <textarea name="description" placeholder="请输入角色描述" class="layui-textarea"></textarea>
+      </div>
+    </div>
+    <div class="layui-form-item">
+      <label class="layui-form-label">权限设置</label>
+      <div class="layui-input-block">
+        <div class="layui-checkbox-group">
+          <input type="checkbox" name="permissions" value="dashboard" title="仪表盘查看">
+          <input type="checkbox" name="permissions" value="reports" title="报告查看">
+          <input type="checkbox" name="permissions" value="users" title="用户管理">
+          <input type="checkbox" name="permissions" value="roles" title="角色管理">
+          <input type="checkbox" name="permissions" value="system" title="系统设置">
+        </div>
+      </div>
+    </div>
+    <div class="layui-form-item layui-form-text">
+      <label class="layui-form-label">备注</label>
+      <div class="layui-input-block">
+        <textarea name="remark" placeholder="请输入备注信息" class="layui-textarea"></textarea>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+  layui.use(['table', 'form', 'layer'], function() {
+    var table = layui.table;
+    var form = layui.form;
+    var layer = layui.layer;
+    
+    // 角色列表表格
+    table.render({
+      elem: '#rolesTable',
+      url: '/api/roles',
+      page: true,
+      limits: [10, 20, 50, 100],
+      limit: 10,
+      toolbar: '#rolesToolbar',
+      cols: [[
+        {type: 'checkbox', fixed: 'left'},
+        {field: 'id', title: 'ID', width: 80, fixed: 'left', sort: true},
+        {field: 'name', title: '角色名称', width: 150},
+        {field: 'description', title: '角色描述', width: 250},
+        {field: 'permissions', title: '权限列表', width: 300, templet: function(d) {
+          var permissions = d.permissions || [];
+          var permissionNames = {
+            'dashboard': '仪表盘查看',
+            'reports': '报告查看',
+            'users': '用户管理',
+            'roles': '角色管理',
+            'system': '系统设置'
+          };
+          return permissions.map(p => permissionNames[p] || p).join(', ');
+        }},
+        {field: 'created_at', title: '创建时间', width: 200},
+        {fixed: 'right', title: '操作', toolbar: '#rolesBar', width: 200}
+      ]]
+    });
+    
+    // 头工具栏事件
+    table.on('toolbar(rolesTable)', function(obj) {
+      var checkStatus = table.checkStatus(obj.config.id);
+      switch(obj.event) {
+        case 'addRole':
+          // 打开添加角色弹窗
+          openRoleEditModal();
+          break;
+        case 'batchDelete':
+          // 批量删除角色
+          var data = checkStatus.data;
+          if(data.length === 0) {
+            layer.msg('请选择要删除的角色');
+            return;
+          }
+          var ids = data.map(item => item.id);
+          deleteRoles(ids);
+          break;
+      };
+    });
+    
+    // 行工具栏事件
+    table.on('tool(rolesTable)', function(obj) {
+      var data = obj.data;
+      if(obj.event === 'edit') {
+        // 打开编辑角色弹窗
+        openRoleEditModal(data);
+      } else if(obj.event === 'delete') {
+        // 删除角色
+        deleteRoles([data.id]);
+      }
+    });
+    
+    // 打开角色编辑弹窗
+    function openRoleEditModal(role) {
+      // 重置表单
+      form.val('roleEditForm', role || {});
+      
+      // 重新渲染表单
+      form.render();
+      
+      // 打开弹窗
+      layer.open({
+        type: 1,
+        title: role ? '编辑角色' : '添加角色',
+        area: ['600px', '500px'],
+        content: $('#roleEditModal'),
+        btn: ['保存', '取消'],
+        yes: function(index, layero) {
+          // 验证表单
+          form.on('submit(roleEditForm)', function(data) {
+            // 提交表单
+            saveRole(data.field);
+            return false;
+          });
+          
+          // 触发表单提交
+          $('#roleEditForm').find('button[type="submit"]').click();
+        },
+        end: function() {
+          // 关闭弹窗时重置表单
+          $('#roleEditForm')[0].reset();
+        }
+      });
+    }
+    
+    // 保存角色
+    function saveRole(roleData) {
+      // 转换权限数据
+      var permissions = [];
+      $('input[name="permissions"]:checked').each(function() {
+        permissions.push($(this).val());
+      });
+      roleData.permissions = permissions;
+      
+      // 发送请求
+      $.ajax({
+        url: '/api/roles' + (roleData.id ? '/' + roleData.id : ''),
+        type: roleData.id ? 'PUT' : 'POST',
+        data: roleData,
+        success: function(res) {
+          if(res.code === 0) {
+            layer.msg('保存成功', function() {
+              // 关闭弹窗
+              layer.closeAll();
+              // 刷新表格
+              table.reload('rolesTable');
+            });
+          } else {
+            layer.msg(res.msg || '保存失败');
+          }
+        },
+        error: function() {
+          layer.msg('保存失败');
+        }
+      });
+    }
+    
+    // 删除角色
+    function deleteRoles(ids) {
+      layer.confirm('确定要删除选中的角色吗？', {icon: 3, title:'提示'}, function(index) {
+        // 发送请求
+        $.ajax({
+          url: '/api/roles',
+          type: 'DELETE',
+          data: {ids: ids.join(',')},
+          success: function(res) {
+            if(res.code === 0) {
+              layer.msg('删除成功', function() {
+                // 刷新表格
+                table.reload('rolesTable');
+              });
+            } else {
+              layer.msg(res.msg || '删除失败');
+            }
+          },
+          error: function() {
+            layer.msg('删除失败');
+          }
+        });
+        layer.close(index);
+      });
+    }
+  });
+</script>
+
+<!-- 头工具栏模板 -->
+<script type="text/html" id="rolesToolbar">
+  <div class="layui-btn-container">
+    <button class="layui-btn layui-btn-normal" lay-event="addRole">
+      <i class="layui-icon layui-icon-add-1"></i>添加角色
+    </button>
+    <button class="layui-btn layui-btn-danger" lay-event="batchDelete">
+      <i class="layui-icon layui-icon-delete"></i>批量删除
+    </button>
+  </div>
+</script>
+
+<!-- 行工具栏模板 -->
+<script type="text/html" id="rolesBar">
+  <a class="layui-btn layui-btn-xs" lay-event="edit">
+    <i class="layui-icon layui-icon-edit"></i>编辑
+  </a>
+  <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="delete">
+    <i class="layui-icon layui-icon-delete"></i>删除
+  </a>
+</script>
+{% endblock %}

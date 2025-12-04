@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}仪表盘 - 舆情分析{% endblock %}
+
+{% block header %}政企智能舆情分析系统{% endblock %}
+
+{% block content %}
+    <div class="layui-card">
+        <div class="layui-card-header" style="background-color: #f8f9fa; border-bottom: 1px solid #e6e6e6;">
+            <i class="layui-icon layui-icon-search" style="color: #1E9FFF;"></i> 舆情关键词检索
+        </div>
+        <div class="layui-card-body">
+            <div class="layui-form">
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <div class="layui-input-inline" style="width: 500px;">
+                            <input type="text" name="keyword" id="keyword" placeholder="请输入需要监控的关键字或需求" autocomplete="off" class="layui-input">
+                        </div>
+                        <button class="layui-btn" id="crawl-btn">
+                            <i class="layui-icon layui-icon-search"></i> 开始检索
+                        </button>
+                        <button type="reset" class="layui-btn layui-btn-primary">
+                            <i class="layui-icon layui-icon-refresh"></i> 重置
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="loading" style="display: none; text-align: center; padding: 40px;">
+        <i class="layui-icon layui-icon-loading layui-icon layui-anim layui-anim-rotate layui-anim-loop" style="font-size: 40px; color: #1E9FFF;"></i>
+        <p style="margin-top: 20px; color: #666;">正在通过网络获取数据源...</p>
+    </div>
+    
+    <div id="results" class="results-container"></div>
+{% endblock %}
+
+{% block js %}
+    <script>
+        layui.use(['layer', 'table'], function() {
+            var layer = layui.layer;
+            var table = layui.table;
+            
+            document.getElementById('crawl-btn').onclick = function() {
+                var keyword = document.getElementById('keyword').value;
+                
+                if (!keyword) {
+                    layer.msg('请输入需要监控的关键字或需求', {icon: 2});
+                    return;
+                }
+                
+                // 显示加载状态
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('results').innerHTML = '';
+                
+                // 发送请求
+                fetch('/api/crawl?keyword=' + encodeURIComponent(keyword))
+                    .then(response => response.json())
+                    .then(data => {
+                        // 隐藏加载状态
+                        document.getElementById('loading').style.display = 'none';
+                        
+                        if (data.success) {
+                            layer.msg(`成功获取到 ${data.count} 条舆情数据`, {icon: 1});
+                            
+                            // 显示结果
+                            var resultsDiv = document.getElementById('results');
+                            if (data.results.length > 0) {
+                                var tableHtml = `
+                                    <div class="layui-card">
+                                        <div class="layui-card-header">
+                                            <i class="layui-icon layui-icon-list"></i> 舆情数据列表 (共 ${data.count} 条)
+                                        </div>
+                                        <div class="layui-card-body">
+                                            <table class="layui-table" lay-even lay-skin="line">
+                                                <thead>
+                                                    <tr>
+                                                        <th style="width: 60px;">序号</th>
+                                                        <th>标题</th>
+                                                        <th>来源</th>
+                                                        <th>摘要</th>
+                                                        <th style="width: 200px;">封面图片</th>
+                                                        <th style="width: 150px;">操作</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                `;
+                                
+                                data.results.forEach(function(result, index) {
+                                    tableHtml += `
+                                        <tr>
+                                            <td>${index + 1}</td>
+                                            <td><a href="${result.original_url}" target="_blank" class="result-title-link">${result.title}</a></td>
+                                            <td>${result.source}</td>
+                                            <td class="result-summary">${result.summary}</td>
+                                            <td>
+                                                ${result.cover ? 
+                                                    `<img src="${result.cover}" class="cover-img" onclick="showImage('${result.cover}')" title="点击查看大图">` : 
+                                                    '<span class="no-cover">无图片</span>'
+                                                }
+                                            </td>
+                                            <td>
+                                                <a href="${result.original_url}" target="_blank" class="layui-btn layui-btn-xs layui-btn-primary">
+                                                    <i class="layui-icon layui-icon-website"></i> 查看原文
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    `;
+                                });
+                                
+                                tableHtml += `
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                `;
+                                
+                                resultsDiv.innerHTML = tableHtml;
+                            } else {
+                                resultsDiv.innerHTML = `
+                                    <div class="empty-results">
+                                        <i class="layui-icon layui-icon-search" style="font-size: 60px; color: #ccc;"></i>
+                                        <p>没有找到相关舆情数据</p>
+                                    </div>
+                                `;
+                            }
+                        } else {
+                            layer.msg('数据获取失败：' + data.message, {icon: 2});
+                        }
+                    })
+                    .catch(error => {
+                        document.getElementById('loading').style.display = 'none';
+                        layer.msg('数据获取失败：网络错误', {icon: 2});
+                    });
+            };
+            
+            // 点击图片查看大图
+            window.showImage = function(imgUrl) {
+                layer.open({
+                    type: 1,
+                    title: false,
+                    closeBtn: 1,
+                    shadeClose: true,
+                    content: `<img src="${imgUrl}" style="max-width: 800px; max-height: 600px;">`
+                });
+            };
+        });
+    </script>
+    
+    <style>
+        .results-container {
+            margin-top: 20px;
+        }
+        
+        .result-title-link {
+            color: #1E9FFF;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .result-title-link:hover {
+            text-decoration: underline;
+        }
+        
+        .result-summary {
+            color: #666;
+            line-height: 1.5;
+            max-height: 4.5em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+        }
+        
+        .cover-img {
+            max-width: 80px;
+            max-height: 60px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        
+        .cover-img:hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .no-cover {
+            color: #999;
+            font-size: 12px;
+        }
+        
+        .empty-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        
+        .empty-results i {
+            margin-bottom: 20px;
+            display: block;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .layui-input-inline {
+                width: 100% !important;
+                margin-bottom: 10px;
+            }
+            
+            .layui-btn {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+{% endblock %}
