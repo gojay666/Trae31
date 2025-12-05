@@ -1,28 +1,56 @@
 {% extends "base.html" %}
 
-{% block title %}仪表盘 - 舆情分析{% endblock %}
+{% block title %}数据采集仪表盘{% endblock %}
 
-{% block header %}政企智能舆情分析系统{% endblock %}
+{% block header %}舆情分析系统{% endblock %}
 
 {% block content %}
     <div class="layui-card">
         <div class="layui-card-header" style="background-color: #f8f9fa; border-bottom: 1px solid #e6e6e6;">
-            <i class="layui-icon layui-icon-search" style="color: #1E9FFF;"></i> 舆情关键词检索
+            <i class="layui-icon layui-icon-search" style="color: #1E9FFF;"></i> 数据采集
         </div>
         <div class="layui-card-body">
-            <div class="layui-form">
+            <form class="layui-form" id="crawl-form">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">关键词</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="keyword" id="keyword" required lay-verify="required" placeholder="请输入采集关键词" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">数据源</label>
+                    <div class="layui-input-block">
+                        <select name="source" lay-verify="required">
+                            <option value="baidu">百度搜索</option>
+                            <option value="bing">Bing搜索</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">采集数量</label>
+                    <div class="layui-input-block">
+                        <input type="number" name="limit" value="20" min="1" max="100" placeholder="请输入采集数量(1-100)" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
                 <div class="layui-form-item">
                     <div class="layui-input-block">
-                        <div class="layui-input-inline" style="width: 500px;">
-                            <input type="text" name="keyword" id="keyword" placeholder="请输入需要监控的关键字或需求" autocomplete="off" class="layui-input">
-                        </div>
-                        <button class="layui-btn" id="crawl-btn">
-                            <i class="layui-icon layui-icon-search"></i> 开始检索
+                        <button class="layui-btn" id="crawl-btn" lay-submit lay-filter="crawl-submit">
+                            <i class="layui-icon layui-icon-search"></i> 开始采集
                         </button>
                         <button type="reset" class="layui-btn layui-btn-primary">
                             <i class="layui-icon layui-icon-refresh"></i> 重置
                         </button>
+                        <button type="button" class="layui-btn layui-btn-normal" id="store-btn" disabled>
+                            <i class="layui-icon layui-icon-save"></i> 存储选中
+                        </button>
                     </div>
+                </div>
+            </form>
+            
+            <div class="layui-card" style="margin-top: 20px;">
+                <div class="layui-card-header">采集日志</div>
+                <div class="layui-card-body">
+                    <div id="crawl-log" style="height: 200px; overflow-y: auto; background-color: #f8f8f8; padding: 10px; border-radius: 4px;"></div>
                 </div>
             </div>
         </div>
@@ -31,6 +59,15 @@
     <div id="loading" style="display: none; text-align: center; padding: 40px;">
         <i class="layui-icon layui-icon-loading layui-icon layui-anim layui-anim-rotate layui-anim-loop" style="font-size: 40px; color: #1E9FFF;"></i>
         <p style="margin-top: 20px; color: #666;">正在通过网络获取数据源...</p>
+        
+        <!-- 添加动态进度条 -->
+        <div class="progress-container" style="width: 60%; margin: 20px auto; text-align: left;">
+            <div class="progress-title" style="color: #333; margin-bottom: 5px;">采集进度:</div>
+            <div class="progress-bar" style="width: 100%; height: 10px; background-color: #f0f0f0; border-radius: 5px; overflow: hidden;">
+                <div id="progress" class="progress" style="width: 0%; height: 100%; background-color: #1E9FFF; transition: width 0.3s ease;"></div>
+            </div>
+            <div id="progress-text" class="progress-text" style="color: #666; font-size: 12px; margin-top: 5px;">0%</div>
+        </div>
     </div>
     
     <div id="results" class="results-container"></div>
@@ -38,113 +75,238 @@
 
 {% block js %}
     <script>
-        layui.use(['layer', 'table'], function() {
+        layui.use(['layer', 'table', 'form', 'jquery'], function() {
             var layer = layui.layer;
             var table = layui.table;
+            var form = layui.form;
+            var $ = layui.jquery;
             
-            document.getElementById('crawl-btn').onclick = function() {
-                var keyword = document.getElementById('keyword').value;
+            // 表单提交事件
+            form.on('submit(crawl-submit)', function(data) {
+                var keyword = data.field.keyword;
+                var source = data.field.source;
+                var limit = data.field.limit;
                 
                 if (!keyword) {
-                    layer.msg('请输入需要监控的关键字或需求', {icon: 2});
-                    return;
+                    layer.msg('请输入采集关键词', {icon: 2});
+                    return false;
                 }
                 
                 // 显示加载状态
                 document.getElementById('loading').style.display = 'block';
                 document.getElementById('results').innerHTML = '';
+                document.getElementById('crawl-log').innerHTML = '';
+                
+                // 添加日志
+                addLog('开始采集关键词：' + keyword);
+                
+                // 初始化进度条
+                const progressBar = document.getElementById('progress');
+                const progressText = document.getElementById('progress-text');
+                let progress = 0;
+                
+                // 创建进度更新定时器
+                const progressInterval = setInterval(() => {
+                    progress += Math.random() * 15; // 随机增加进度
+                    if (progress > 90) progress = 90; // 不超过90%，留10%给最终完成
+                    progressBar.style.width = progress + '%';
+                    progressText.textContent = Math.round(progress) + '%';
+                    
+                    // 添加进度日志
+                    if (Math.round(progress) % 20 === 0) {
+                        addLog(`采集进度：${Math.round(progress)}%`);
+                    }
+                }, 500);
                 
                 // 发送请求
-                fetch('/api/crawl?keyword=' + encodeURIComponent(keyword))
+                fetch(`/api/crawl?keyword=${encodeURIComponent(keyword)}&source=${source}&limit=${limit}`)
                     .then(response => response.json())
                     .then(data => {
+                        // 清除进度定时器
+                        clearInterval(progressInterval);
+                        // 设置进度为100%
+                        progress = 100;
+                        progressBar.style.width = progress + '%';
+                        progressText.textContent = Math.round(progress) + '%';
+                        
+                        addLog('采集完成');
                         // 隐藏加载状态
                         document.getElementById('loading').style.display = 'none';
                         
                         if (data.success) {
-                            layer.msg(`成功获取到 ${data.count} 条舆情数据`, {icon: 1});
+                            addLog(`成功获取到 ${data.count} 条数据`);
+                            layer.msg(`成功获取到 ${data.count} 条数据`, {icon: 1});
+                            
+                            // 启用存储按钮
+                            document.getElementById('store-btn').disabled = false;
                             
                             // 显示结果
                             var resultsDiv = document.getElementById('results');
                             if (data.results.length > 0) {
-                                var tableHtml = `
+                                var gridHtml = `
                                     <div class="layui-card">
                                         <div class="layui-card-header">
-                                            <i class="layui-icon layui-icon-list"></i> 舆情数据列表 (共 ${data.count} 条)
+                                            <i class="layui-icon layui-icon-list"></i> 数据列表 (共 ${data.count} 条)
+                                            <div class="layui-card-header-right">
+                                                <label class="layui-form-item">
+                                                    <input type="checkbox" name="select-all" lay-skin="primary" title="全选">
+                                                </label>
+                                            </div>
                                         </div>
                                         <div class="layui-card-body">
-                                            <table class="layui-table" lay-even lay-skin="line">
-                                                <thead>
-                                                    <tr>
-                                                        <th style="width: 60px;">序号</th>
-                                                        <th>标题</th>
-                                                        <th>来源</th>
-                                                        <th>摘要</th>
-                                                        <th style="width: 200px;">封面图片</th>
-                                                        <th style="width: 150px;">操作</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                `;
+                                            <div class="results-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 10px;">`;
                                 
                                 data.results.forEach(function(result, index) {
-                                    tableHtml += `
-                                        <tr>
-                                            <td>${index + 1}</td>
-                                            <td><a href="${result.original_url}" target="_blank" class="result-title-link">${result.title}</a></td>
-                                            <td>${result.source}</td>
-                                            <td class="result-summary">${result.summary}</td>
-                                            <td>
-                                                ${result.cover ? 
-                                                    `<img src="${result.cover}" class="cover-img" onclick="showImage('${result.cover}')" title="点击查看大图">` : 
-                                                    '<span class="no-cover">无图片</span>'
-                                                }
-                                            </td>
-                                            <td>
-                                                <a href="${result.original_url}" target="_blank" class="layui-btn layui-btn-xs layui-btn-primary">
-                                                    <i class="layui-icon layui-icon-website"></i> 查看原文
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    `;
+                                    gridHtml += `
+                                        <div class="result-card" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; transition: all 0.3s ease; position: relative;" 
+                                             data-result-id="${result.id}" 
+                                             data-title="${result.title}" 
+                                             data-summary="${result.summary}" 
+                                             data-cover="${result.cover}" 
+                                             data-url="${result.original_url}" 
+                                             data-source="${result.source}">
+                                            <div class="result-checkbox" style="position: absolute; top: 10px; right: 10px; z-index: 10;">
+                                                <input type="checkbox" name="result-checkbox" data-id="${result.id}" lay-skin="primary">
+                                            </div>
+                                            <a href="${result.original_url}" target="_blank" style="text-decoration: none; color: inherit;">
+                                                <div class="result-cover" style="height: 160px; overflow: hidden; background-color: #f5f5f5;">
+                                                    ${result.cover ? 
+                                                        `<img src="${result.cover}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;">` : 
+                                                        `<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #999;"><i class="layui-icon layui-icon-picture"></i></div>`
+                                                    }
+                                                </div>
+                                                <div class="result-content" style="padding: 12px;">
+                                                    <div class="result-title" style="font-weight: 500; margin-bottom: 8px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${result.title}</div>
+                                                    <div class="result-source" style="color: #666; font-size: 12px; margin-bottom: 8px;">${result.source}</div>
+                                                    <div class="result-summary" style="color: #999; font-size: 12px; line-height: 1.4; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">${result.summary}</div>
+                                                </div>
+                                            </a>
+                                        </div>`;
                                 });
                                 
-                                tableHtml += `
-                                                </tbody>
-                                            </table>
+                                gridHtml += `
+                                            </div>
                                         </div>
-                                    </div>
-                                `;
+                                    </div>`;
                                 
-                                resultsDiv.innerHTML = tableHtml;
+                                resultsDiv.innerHTML = gridHtml;
+                                
+                                // 重新渲染表单，使复选框生效
+                                form.render('checkbox');
                             } else {
                                 resultsDiv.innerHTML = `
                                     <div class="empty-results">
                                         <i class="layui-icon layui-icon-search" style="font-size: 60px; color: #ccc;"></i>
-                                        <p>没有找到相关舆情数据</p>
-                                    </div>
-                                `;
+                                        <p>没有找到相关数据</p>
+                                    </div>`;
                             }
                         } else {
+                            addLog('数据获取失败：' + data.message);
                             layer.msg('数据获取失败：' + data.message, {icon: 2});
                         }
                     })
                     .catch(error => {
                         document.getElementById('loading').style.display = 'none';
+                        addLog('数据获取失败：网络错误');
                         layer.msg('数据获取失败：网络错误', {icon: 2});
                     });
-            };
+                    
+                return false;
+            });
             
-            // 点击图片查看大图
-            window.showImage = function(imgUrl) {
-                layer.open({
-                    type: 1,
-                    title: false,
-                    closeBtn: 1,
-                    shadeClose: true,
-                    content: `<img src="${imgUrl}" style="max-width: 800px; max-height: 600px;">`
+            // 添加日志
+            function addLog(message) {
+                var logDiv = document.getElementById('crawl-log');
+                var timestamp = new Date().toLocaleString();
+                logDiv.innerHTML += `[${timestamp}] ${message}<br>`;
+                logDiv.scrollTop = logDiv.scrollHeight;
+            }
+            
+            // 全选/取消全选
+            form.on('checkbox(select-all)', function(data) {
+                var checkboxes = document.querySelectorAll('input[name="result-checkbox"]');
+                checkboxes.forEach(function(checkbox) {
+                    checkbox.checked = data.elem.checked;
                 });
-            };
+                form.render('checkbox');
+                updateSelectedCount();
+            });
+            
+            // 单个复选框点击事件
+            form.on('checkbox(result-checkbox)', function() {
+                updateSelectedCount();
+            });
+            
+            // 更新已选择数量
+            function updateSelectedCount() {
+                var checkedBoxes = document.querySelectorAll('input[name="result-checkbox"]:checked');
+                var storeBtn = document.getElementById('store-btn');
+                
+                if (checkedBoxes.length > 0) {
+                    storeBtn.disabled = false;
+                    storeBtn.innerHTML = `<i class="layui-icon layui-icon-save"></i> 存储选中 (${checkedBoxes.length})`;
+                } else {
+                    storeBtn.disabled = true;
+                    storeBtn.innerHTML = `<i class="layui-icon layui-icon-save"></i> 存储选中`;
+                }
+            }
+            
+            // 存储按钮点击事件
+            $('#store-btn').on('click', function() {
+                var checkedBoxes = $('input[name="result-checkbox"]:checked');
+                if (checkedBoxes.length === 0) {
+                    layer.msg('请选择要存储的数据', {icon: 2});
+                    return;
+                }
+                
+                var selectedResults = [];
+                checkedBoxes.each(function() {
+                    var resultId = $(this).data('id');
+                    var resultElement = $(`[data-result-id="${resultId}"]`);
+                    if (resultElement.length > 0) {
+                        var result = {
+                            id: resultId,
+                            title: resultElement.data('title'),
+                            summary: resultElement.data('summary'),
+                            cover: resultElement.data('cover'),
+                            original_url: resultElement.data('url'),
+                            source: resultElement.data('source'),
+                            keyword: $('input[name="keyword"]').val()
+                        };
+                        selectedResults.push(result);
+                    }
+                });
+                
+                layer.confirm(`确定要存储选中的 ${selectedResults.length} 条数据吗？`, function(index) {
+                    // 使用jquery发送请求
+                    $.ajax({
+                        url: '/api/store_data',
+                        type: 'POST',
+                        data: {results: JSON.stringify(selectedResults)},
+                        success: function(res) {
+                            if (res.success) {
+                                layer.msg('存储完成', {icon: 1});
+                                addLog(`成功存储 ${res.stored_count} 条数据`);
+                                
+                                // 禁用存储按钮
+                                $('#store-btn').prop('disabled', true).html('<i class="layui-icon layui-icon-save"></i> 存储选中');
+                                
+                                // 清空结果
+                                $('#results').empty();
+                            } else {
+                                layer.msg('存储失败：' + res.message, {icon: 2});
+                                addLog('存储失败：' + res.message);
+                            }
+                        },
+                        error: function() {
+                            layer.msg('存储失败：网络错误', {icon: 2});
+                            addLog('存储失败：网络错误');
+                        }
+                    });
+                    layer.close(index);
+                });
+            });
+            
         });
     </script>
     
@@ -153,43 +315,56 @@
             margin-top: 20px;
         }
         
-        .result-title-link {
-            color: #1E9FFF;
-            text-decoration: none;
+        .result-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            background-color: #fff;
+        }
+        
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border-color: #1E9FFF;
+        }
+        
+        .result-card:hover .result-cover img {
+            transform: scale(1.05);
+        }
+        
+        .result-title {
+            color: #333;
             font-weight: 500;
-        }
-        
-        .result-title-link:hover {
-            text-decoration: underline;
-        }
-        
-        .result-summary {
-            color: #666;
-            line-height: 1.5;
-            max-height: 4.5em;
+            margin-bottom: 8px;
             overflow: hidden;
             text-overflow: ellipsis;
             display: -webkit-box;
-            -webkit-line-clamp: 3;
+            display: box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
             -webkit-box-orient: vertical;
+            box-orient: vertical;
         }
         
-        .cover-img {
-            max-width: 80px;
-            max-height: 60px;
-            cursor: pointer;
-            border-radius: 4px;
-            transition: all 0.3s;
+        .result-source {
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 8px;
         }
         
-        .cover-img:hover {
-            transform: scale(1.1);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        }
-        
-        .no-cover {
+        .result-summary {
             color: #999;
             font-size: 12px;
+            line-height: 1.4;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            display: box;
+            -webkit-line-clamp: 3;
+            line-clamp: 3;
+            -webkit-box-orient: vertical;
+            box-orient: vertical;
         }
         
         .empty-results {
@@ -205,7 +380,7 @@
         
         /* 响应式设计 */
         @media (max-width: 768px) {
-            .layui-input-inline {
+            .layui-form-item .layui-input-inline {
                 width: 100% !important;
                 margin-bottom: 10px;
             }
@@ -213,6 +388,16 @@
             .layui-btn {
                 width: 100%;
                 margin-bottom: 10px;
+            }
+            
+            .results-grid {
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .results-grid {
+                grid-template-columns: 1fr !important;
             }
         }
     </style>

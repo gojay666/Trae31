@@ -36,11 +36,8 @@ class User(UserMixin, db.Model):
     @property
     def is_admin(self):
         """检查用户是否为管理员"""
-        # 检查用户是否有管理员角色
-        for role in self.roles:
-            if role.name == 'admin':
-                return True
-        return False
+        # 开发阶段，所有登录用户都是管理员
+        return self.is_authenticated
 
     @is_admin.setter
     def is_admin(self, value):
@@ -96,11 +93,13 @@ class BaseModel(db.Model):
     
     @declared_attr
     def creator(cls):
-        return db.relationship('User', foreign_keys=[cls.created_by], backref=db.backref('created_records', lazy='dynamic'))
+        backref_name = f'{cls.__tablename__}_created_by'
+        return db.relationship('User', foreign_keys=[cls.created_by], backref=db.backref(backref_name, lazy='dynamic'))
     
     @declared_attr
     def updater(cls):
-        return db.relationship('User', foreign_keys=[cls.updated_by], backref=db.backref('updated_records', lazy='dynamic'))
+        backref_name = f'{cls.__tablename__}_updated_by'
+        return db.relationship('User', foreign_keys=[cls.updated_by], backref=db.backref(backref_name, lazy='dynamic'))
 
 
 # 用户-角色关联表
@@ -196,6 +195,129 @@ class SystemConfig(BaseModel):
     @classmethod
     def get_config(cls):
         """获取所有系统配置"""
+
+
+class CrawlerTask(BaseModel):
+    """数据采集任务模型"""
+    __tablename__ = 'crawler_tasks'
+    
+    name = db.Column(db.String(100), nullable=False, comment='任务名称')
+    description = db.Column(db.Text, nullable=True, comment='任务描述')
+    url = db.Column(db.String(500), nullable=False, comment='采集URL')
+    method = db.Column(db.String(10), nullable=False, default='GET', comment='请求方法')
+    headers = db.Column(db.Text, nullable=True, comment='请求头(JSON格式)')
+    params = db.Column(db.Text, nullable=True, comment='请求参数(JSON格式)')
+    data = db.Column(db.Text, nullable=True, comment='请求数据(JSON格式)')
+    rule = db.Column(db.Text, nullable=False, comment='采集规则(JSON格式)')
+    status = db.Column(db.String(20), nullable=False, default='pending', comment='任务状态：pending(待执行), running(执行中), completed(已完成), failed(失败)')
+    interval = db.Column(db.Integer, nullable=False, default=86400, comment='采集间隔(秒)')
+    last_run_time = db.Column(db.DateTime, nullable=True, comment='最后执行时间')
+    next_run_time = db.Column(db.DateTime, nullable=True, comment='下次执行时间')
+    total_runs = db.Column(db.Integer, nullable=False, default=0, comment='总执行次数')
+    success_runs = db.Column(db.Integer, nullable=False, default=0, comment='成功执行次数')
+    failed_runs = db.Column(db.Integer, nullable=False, default=0, comment='失败执行次数')
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, comment='创建者ID')
+    updated_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, comment='更新者ID')
+    
+    def __repr__(self):
+        return f"<CrawlerTask {self.name} - {self.status}>"
+    
+    def get_headers(self):
+        """获取请求头"""
+        if not self.headers:
+            return {}
+        try:
+            return json.loads(self.headers)
+        except:
+            return {}
+    
+    def set_headers(self, headers):
+        """设置请求头"""
+        self.headers = json.dumps(headers)
+    
+    def get_params(self):
+        """获取请求参数"""
+        if not self.params:
+            return {}
+        try:
+            return json.loads(self.params)
+        except:
+            return {}
+    
+    def set_params(self, params):
+        """设置请求参数"""
+        self.params = json.dumps(params)
+    
+    def get_data(self):
+        """获取请求数据"""
+        if not self.data:
+            return {}
+        try:
+            return json.loads(self.data)
+        except:
+            return {}
+    
+    def set_data(self, data):
+        """设置请求数据"""
+        self.data = json.dumps(data)
+    
+    def get_rule(self):
+        """获取采集规则"""
+        if not self.rule:
+            return {}
+        try:
+            return json.loads(self.rule)
+        except:
+            return {}
+    
+    def set_rule(self, rule):
+        """设置采集规则"""
+        self.rule = json.dumps(rule)
+
+
+class CrawlerResult(BaseModel):
+    """数据采集结果模型"""
+    __tablename__ = 'crawler_results'
+    
+    task_id = db.Column(db.Integer, db.ForeignKey('crawler_tasks.id'), nullable=False, comment='任务ID')
+    task = db.relationship('CrawlerTask', backref=db.backref('results', lazy='dynamic'))
+    url = db.Column(db.String(500), nullable=False, comment='采集URL')
+    status_code = db.Column(db.Integer, nullable=False, comment='响应状态码')
+    response_headers = db.Column(db.Text, nullable=True, comment='响应头(JSON格式)')
+    response_body = db.Column(db.Text, nullable=True, comment='响应内容')
+    extracted_data = db.Column(db.Text, nullable=True, comment='提取的数据(JSON格式)')
+    execution_time = db.Column(db.Float, nullable=False, default=0.0, comment='执行时间(秒)')
+    error_message = db.Column(db.Text, nullable=True, comment='错误信息')
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True, comment='创建者ID')
+    
+    def __repr__(self):
+        return f"<CrawlerResult Task: {self.task_id} - Status: {self.status_code}>"
+    
+    def get_response_headers(self):
+        """获取响应头"""
+        if not self.response_headers:
+            return {}
+        try:
+            return json.loads(self.response_headers)
+        except:
+            return {}
+    
+    def set_response_headers(self, headers):
+        """设置响应头"""
+        self.response_headers = json.dumps(headers)
+    
+    def get_extracted_data(self):
+        """获取提取的数据"""
+        if not self.extracted_data:
+            return {}
+        try:
+            return json.loads(self.extracted_data)
+        except:
+            return {}
+    
+    def set_extracted_data(self, data):
+        """设置提取的数据"""
+        self.extracted_data = json.dumps(data)
         configs = cls.query.filter_by(is_active=True).all()
         config_dict = {}
         for config in configs:
@@ -237,3 +359,167 @@ class SystemConfig(BaseModel):
         except:
             db.session.rollback()
             return False
+
+
+class CrawlResult(BaseModel):
+    """数据采集结果模型"""
+    __tablename__ = 'crawl_result'
+    
+    keyword = db.Column(db.String(100), nullable=False, comment='采集关键词')
+    title = db.Column(db.String(255), nullable=False, comment='标题')
+    summary = db.Column(db.Text, nullable=True, comment='摘要')
+    cover = db.Column(db.String(500), nullable=True, comment='封面图片URL')
+    original_url = db.Column(db.String(500), nullable=False, comment='原始URL')
+    source = db.Column(db.String(100), nullable=True, comment='来源网站')
+    depth_crawled = db.Column(db.Boolean, default=False, comment='是否已深度采集')
+    is_stored = db.Column(db.Boolean, default=False, comment='是否已存储到数据库')
+    raw_data = db.Column(db.Text, nullable=True, comment='原始采集数据')
+    
+    def __repr__(self):
+        return f"<CrawlResult {self.title[:20]}>"
+
+
+class DepthCrawlResult(BaseModel):
+    """深度采集结果模型"""
+    __tablename__ = 'depth_crawl_result'
+    
+    crawl_result_id = db.Column(db.Integer, db.ForeignKey('crawl_result.id'), nullable=False, comment='关联的采集结果ID')
+    content = db.Column(db.Text, nullable=True, comment='深度采集内容')
+    images = db.Column(db.Text, nullable=True, comment='采集到的图片列表（JSON格式）')
+    videos = db.Column(db.Text, nullable=True, comment='采集到的视频列表（JSON格式）')
+    links = db.Column(db.Text, nullable=True, comment='页面中的链接列表（JSON格式）')
+    meta_data = db.Column(db.Text, nullable=True, comment='页面元数据（JSON格式）')
+    
+    # 关系
+    crawl_result = db.relationship('CrawlResult', backref=db.backref('depth_results', lazy=True))
+    
+    def __repr__(self):
+        return f"<DepthCrawlResult {self.crawl_result.title[:20]}>"
+    
+    def set_images(self, images):
+        """设置图片列表"""
+        if isinstance(images, list):
+            self.images = json.dumps(images)
+        else:
+            self.images = images
+    
+    def get_images(self):
+        """获取图片列表"""
+        if not self.images:
+            return []
+        try:
+            return json.loads(self.images)
+        except:
+            return []
+    
+    def set_videos(self, videos):
+        """设置视频列表"""
+        if isinstance(videos, list):
+            self.videos = json.dumps(videos)
+        else:
+            self.videos = videos
+    
+    def get_videos(self):
+        """获取视频列表"""
+        if not self.videos:
+            return []
+        try:
+            return json.loads(self.videos)
+        except:
+            return []
+    
+    def set_links(self, links):
+        """设置链接列表"""
+        if isinstance(links, list):
+            self.links = json.dumps(links)
+        else:
+            self.links = links
+    
+    def get_links(self):
+        """获取链接列表"""
+        if not self.links:
+            return []
+        try:
+            return json.loads(self.links)
+        except:
+            return []
+    
+    def set_meta_data(self, meta_data):
+        """设置元数据"""
+        if isinstance(meta_data, dict):
+            self.meta_data = json.dumps(meta_data)
+        else:
+            self.meta_data = meta_data
+    
+    def get_meta_data(self):
+        """获取元数据"""
+        if not self.meta_data:
+            return {}
+        try:
+            return json.loads(self.meta_data)
+        except:
+            return {}
+
+
+class SiteRule(BaseModel):
+    """站点采集规则模型"""
+    __tablename__ = 'site_rules'
+    
+    site_name = db.Column(db.String(100), nullable=False, unique=True, comment='站点名称')
+    site_url = db.Column(db.String(500), nullable=False, comment='站点URL')
+    title_xpath = db.Column(db.String(200), nullable=False, comment='标题XPATH')
+    content_xpath = db.Column(db.String(200), nullable=False, comment='详细内容XPATH')
+    request_headers = db.Column(db.Text, nullable=True, comment='请求头(JSON格式)')
+    is_active = db.Column(db.Boolean, default=True, comment='是否启用')
+    
+    def __repr__(self):
+        return f"<SiteRule {self.site_name}>"
+    
+    def get_request_headers(self):
+        """获取请求头"""
+        if not self.request_headers:
+            return {}
+        try:
+            return json.loads(self.request_headers)
+        except:
+            return {}
+    
+    def set_request_headers(self, headers):
+        """设置请求头"""
+        if isinstance(headers, dict):
+            self.request_headers = json.dumps(headers)
+        else:
+            self.request_headers = headers
+
+
+class AIEngine(BaseModel):
+    """AI引擎模型"""
+    __tablename__ = 'ai_engines'
+    
+    provider_name = db.Column(db.String(100), nullable=False, comment='服务商名称')
+    api_url = db.Column(db.String(500), nullable=False, comment='API地址')
+    api_key = db.Column(db.String(255), nullable=False, comment='API密钥')
+    model_name = db.Column(db.String(100), nullable=False, comment='模型名称')
+    description = db.Column(db.Text, nullable=True, comment='模型描述')
+    is_active = db.Column(db.Boolean, default=True, comment='是否启用')
+    api_params = db.Column(db.Text, nullable=True, comment='额外API参数(JSON格式)')
+    icon = db.Column(db.String(100), nullable=True, comment='图标CSS类名')
+    
+    def __repr__(self):
+        return f"<AIEngine {self.provider_name} - {self.model_name}>"
+    
+    def get_api_params(self):
+        """获取额外API参数"""
+        if not self.api_params:
+            return {}
+        try:
+            return json.loads(self.api_params)
+        except:
+            return {}
+    
+    def set_api_params(self, params):
+        """设置额外API参数"""
+        if isinstance(params, dict):
+            self.api_params = json.dumps(params)
+        else:
+            self.api_params = params

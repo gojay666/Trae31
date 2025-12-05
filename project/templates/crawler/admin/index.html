@@ -1,0 +1,670 @@
+{% extends "base.html" %}
+{% block title %}数据采集管理{% endblock %}
+{% block content %}
+<div class="layui-fluid">
+    <div class="layui-row">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-header">数据采集管理</div>
+                <div class="layui-card-body">
+                    <div class="layui-tab layui-tab-brief" lay-filter="crawler-tab">
+                        <ul class="layui-tab-title">
+                            <li class="layui-this">数据采集</li>
+                            <li>采集结果</li>
+                            <li>深度采集</li>
+                            <li>统计分析</li>
+                        </ul>
+                        <div class="layui-tab-content">
+                            <!-- 数据采集面板 -->
+                            <div class="layui-tab-item layui-show">
+                                <form class="layui-form" id="crawl-form">
+                                    <div class="layui-form-item">
+                                        <label class="layui-form-label">关键词</label>
+                                        <div class="layui-input-block">
+                                            <input type="text" name="keyword" required  lay-verify="required" placeholder="请输入采集关键词" autocomplete="off" class="layui-input">
+                                        </div>
+                                    </div>
+                                    <div class="layui-form-item">
+                                        <label class="layui-form-label">数据源</label>
+                                        <div class="layui-input-block">
+                                            <select name="source" lay-verify="required">
+                                                <option value="baidu">百度搜索</option>
+                                                <option value="bing">Bing搜索</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="layui-form-item">
+                                        <label class="layui-form-label">起始页</label>
+                                        <div class="layui-input-block">
+                                            <input type="number" name="pn" value="0" placeholder="请输入起始页" autocomplete="off" class="layui-input">
+                                        </div>
+                                    </div>
+                                    <div class="layui-form-item">
+                                        <label class="layui-form-label">最大页数</label>
+                                        <div class="layui-input-block">
+                                            <input type="number" name="max_pages" value="1" placeholder="请输入最大采集页数" autocomplete="off" class="layui-input">
+                                        </div>
+                                    </div>
+                                    <div class="layui-form-item">
+                                        <div class="layui-input-block">
+                                            <button class="layui-btn" lay-submit lay-filter="crawl-submit">开始采集</button>
+                                            <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                                            <button type="button" class="layui-btn layui-btn-normal" id="batch-store-btn">存储</button>
+                                        </div>
+                                    </div>
+                                </form>
+                                <div class="layui-card" style="margin-top: 20px;">
+                                    <div class="layui-card-header">采集日志</div>
+                                    <div class="layui-card-body">
+                                        <div id="crawl-log" style="height: 300px; overflow-y: auto; background-color: #f8f8f8; padding: 10px; border-radius: 4px;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 采集结果面板 -->
+                            <div class="layui-tab-item">
+                                <table class="layui-hide" id="crawl-results-table" lay-filter="crawl-results-table"></table>
+                            </div>
+                            <!-- 深度采集面板 -->
+                            <div class="layui-tab-item">
+                                <form class="layui-form" id="depth-crawl-form">
+                                    <div class="layui-form-item">
+                                        <label class="layui-form-label">选择结果</label>
+                                        <div class="layui-input-block">
+                                            <select name="crawl_result_id" lay-verify="required" id="crawl-result-select">
+                                                <option value="">请选择要深度采集的结果</option>
+                                                <!-- 动态加载选项 -->
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="layui-form-item">
+                                        <div class="layui-input-block">
+                                            <button class="layui-btn" lay-submit lay-filter="depth-crawl-submit">开始深度采集</button>
+                                        </div>
+                                    </div>
+                                </form>
+                                <div class="layui-card" style="margin-top: 20px;">
+                                    <div class="layui-card-header">深度采集日志</div>
+                                    <div class="layui-card-body">
+                                        <div id="depth-crawl-log" style="height: 300px; overflow-y: auto; background-color: #f8f8f8; padding: 10px; border-radius: 4px;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 统计分析面板 -->
+                            <div class="layui-tab-item">
+                                <div class="layui-row">
+                                    <div class="layui-col-md3">
+                                        <div class="layui-card">
+                                            <div class="layui-card-body">
+                                                <div class="layui-carousel layadmin-carousel layadmin-stats" lay-anim="fadeIn">
+                                                    <div carousel-item>
+                                                        <div class="item-value" id="total-count">0</div>
+                                                        <div class="item-title">总采集数量</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="layui-col-md3">
+                                        <div class="layui-card">
+                                            <div class="layui-card-body">
+                                                <div class="layui-carousel layadmin-carousel layadmin-stats" lay-anim="fadeIn">
+                                                    <div carousel-item>
+                                                        <div class="item-value" id="depth-crawled-count">0</div>
+                                                        <div class="item-title">已深度采集</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="layui-col-md3">
+                                        <div class="layui-card">
+                                            <div class="layui-card-body">
+                                                <div class="layui-carousel layadmin-carousel layadmin-stats" lay-anim="fadeIn">
+                                                    <div carousel-item>
+                                                        <div class="item-value" id="stored-count">0</div>
+                                                        <div class="item-title">已存储数据</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="layui-col-md3">
+                                        <div class="layui-card">
+                                            <div class="layui-card-body">
+                                                <div class="layui-carousel layadmin-carousel layadmin-stats" lay-anim="fadeIn">
+                                                    <div carousel-item>
+                                                        <div class="item-value" id="today-count">0</div>
+                                                        <div class="item-title">今日新增</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="layui-row layui-col-space15">
+                                    <div class="layui-col-md6">
+                                        <div class="layui-card">
+                                            <div class="layui-card-header">采集趋势（最近7天）</div>
+                                            <div class="layui-card-body">
+                                                <div id="trend-chart" style="height: 300px;"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="layui-col-md6">
+                                        <div class="layui-card">
+                                            <div class="layui-card-header">关键词分布</div>
+                                            <div class="layui-card-body">
+                                                <div id="keyword-chart" style="height: 300px;"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 数据采集结果表格的工具栏 -->
+<script type="text/html" id="crawl-results-toolbar">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="batch-depth-crawl">批量深度采集</button>
+        <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="batch-delete">批量删除</button>
+        <button class="layui-btn layui-btn-sm layui-btn-warm" lay-event="batch-store">批量存储</button>
+    </div>
+</script>
+
+<!-- 数据采集结果表格的操作列 -->
+<script type="text/html" id="crawl-results-bar">
+    <a class="layui-btn layui-btn-xs" lay-event="detail">查看</a>
+    <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="depth-crawl">深度采集</a>
+    <a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="store">存储</a>
+    <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete">删除</a>
+</script>
+
+<!-- 数据采集结果表格的状态列 -->
+<script type="text/html" id="depth-crawled-tpl">
+    {% raw %}{{# if(d.depth_crawled){ }}已深度采集{{# }else{ }}未深度采集{{# } }}{% endraw %}
+</script>
+
+<!-- 数据采集结果表格的存储状态列 -->
+<script type="text/html" id="is-stored-tpl">
+    {% raw %}{{# if(d.is_stored){ }}已存储{{# }else{ }}未存储{{# } }}{% endraw %}
+</script>
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+    layui.use(['form', 'table', 'laydate', 'layer'], function() {
+        var form = layui.form;
+        var table = layui.table;
+        var laydate = layui.laydate;
+        var layer = layui.layer;
+        
+        // 图表对象
+        var trendChart, keywordChart;
+        
+        // 加载统计数据
+        function loadStatsData() {
+            $.ajax({
+                url: '/admin/crawler/api/stats',
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        var stats = response.data;
+                        
+                        // 更新统计卡片
+                        $('#total-count').text(stats.total_count);
+                        $('#depth-crawled-count').text(stats.depth_crawled_count);
+                        $('#stored-count').text(stats.stored_count);
+                        
+                        // 获取今日数量
+                        var today = new Date().toISOString().split('T')[0];
+                        var todayData = stats.date_stats.find(item => item.date === today);
+                        $('#today-count').text(todayData ? todayData.count : 0);
+                        
+                        // 更新趋势图表
+                        updateTrendChart(stats.date_stats);
+                        
+                        // 更新关键词图表
+                        updateKeywordChart(stats.keywords_stats);
+                    }
+                }
+            });
+        }
+        
+        // 更新趋势图表
+        function updateTrendChart(data) {
+            var labels = data.map(item => item.date);
+            var counts = data.map(item => item.count);
+            
+            if (trendChart) {
+                trendChart.destroy();
+            }
+            
+            var ctx = document.getElementById('trend-chart').getContext('2d');
+            trendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '采集数量',
+                        data: counts,
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 更新关键词图表
+        function updateKeywordChart(data) {
+            var labels = data.map(item => item.keyword);
+            var counts = data.map(item => item.count);
+            
+            if (keywordChart) {
+                keywordChart.destroy();
+            }
+            
+            var ctx = document.getElementById('keyword-chart').getContext('2d');
+            keywordChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '采集数量',
+                        data: counts,
+                        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 监听标签页切换
+        $('ul.layui-tab-title li').on('click', function() {
+            var index = $(this).index();
+            // 当切换到统计分析标签页时，加载统计数据
+            if (index === 3) {
+                loadStatsData();
+            }
+            // 当切换到采集结果标签页时，确保表格已渲染
+            if (index === 1) {
+                // 检查表格是否已渲染，如果没有则重新渲染
+                if ($('#crawl-results-table').hasClass('layui-hide')) {
+                    crawlResultsTable.reload();
+                }
+            }
+        });
+
+        // 渲染数据采集结果表格
+        var crawlResultsTable = table.render({
+            elem: '#crawl-results-table'
+            ,url: '/admin/api/crawl_results'
+            ,toolbar: '#crawl-results-toolbar'
+            ,title: '采集结果列表'
+            ,height: 'full-200'
+            ,cellMinWidth: 80
+            ,even: true
+            ,cols: [[
+                {type: 'checkbox', fixed: 'left'}
+                ,{field: 'id', title: 'ID', width: 80, fixed: 'left', unresize: true, sort: true}
+                ,{field: 'keyword', title: '关键词', width: 150}
+                ,{field: 'title', title: '标题', width: 300}
+                ,{field: 'summary', title: '摘要', width: 300}
+                ,{field: 'source', title: '来源', width: 100}
+                ,{field: 'depth_crawled', title: '深度采集', width: 120, templet: '#depth-crawled-tpl'}
+                ,{field: 'is_stored', title: '存储状态', width: 120, templet: '#is-stored-tpl'}
+                ,{field: 'created_at', title: '创建时间', width: 200, sort: true}
+                ,{fixed: 'right', title: '操作', toolbar: '#crawl-results-bar', width: 300}
+            ]]
+            ,page: true
+            ,parseData: function(res) {
+                // 将后端返回的JSON格式转换为layui表格期望的格式
+                return {
+                    "code": res.success ? 0 : 1,
+                    "msg": res.message || "",
+                    "count": res.total || 0,
+                    "data": res.data || []
+                };
+            }
+        });
+
+        // 监听数据采集表单提交
+        form.on('submit(crawl-submit)', function(data) {
+            var logDiv = $('#crawl-log');
+            logDiv.append('<div>开始采集关键词：' + data.field.keyword + '</div>');
+            logDiv.scrollTop(logDiv[0].scrollHeight);
+
+            $.ajax({
+                url: '/admin/api/crawl',
+                type: 'POST',
+                data: data.field,
+                success: function(res) {
+                    if (res.success) {
+                        logDiv.append('<div>采集完成，共采集到 ' + res.total + ' 条结果</div>');
+                        // 刷新采集结果表格
+                        crawlResultsTable.reload();
+                        // 更新深度采集的选择列表
+                        loadCrawlResults();
+                    } else {
+                        logDiv.append('<div style="color: red;">采集失败：' + res.message + '</div>');
+                    }
+                    logDiv.scrollTop(logDiv[0].scrollHeight);
+                },
+                error: function() {
+                    logDiv.append('<div style="color: red;">采集失败：网络错误</div>');
+                    logDiv.scrollTop(logDiv[0].scrollHeight);
+                }
+            });
+            return false;
+        });
+
+        // 表单存储按钮点击事件
+        $('#batch-store-btn').click(function() {
+            var checkStatus = table.checkStatus('crawl-results-table');
+            var data = checkStatus.data;
+            if (data.length === 0) {
+                layer.msg('请选择要存储的结果');
+                return;
+            }
+            var ids = data.map(function(item) { return item.id; });
+            layer.confirm('确定要批量存储选中的 ' + data.length + ' 条结果吗？', function(index) {
+                $.ajax({
+                    url: '/admin/api/store_data',
+                    type: 'POST',
+                    data: {result_ids: ids.join(',')},
+                    success: function(res) {
+                        if (res.success) {
+                            layer.msg('批量存储完成');
+                            crawlResultsTable.reload();
+                        } else {
+                            layer.msg('批量存储失败：' + res.message);
+                        }
+                    },
+                    error: function() {
+                        layer.msg('批量存储失败：网络错误');
+                    }
+                });
+                layer.close(index);
+            });
+        });
+        
+        // 加载采集结果到深度采集的选择列表
+        function loadCrawlResults() {
+            $.ajax({
+                url: '/admin/api/crawl_results',
+                type: 'GET',
+                data: {limit: 1000}, // 加载所有结果
+                success: function(res) {
+                    if (res.success) {
+                        var select = $('#crawl-result-select');
+                        select.empty().append('<option value="">请选择要深度采集的结果</option>');
+                        $.each(res.data, function(index, item) {
+                            select.append('<option value="' + item.id + '">' + item.title + '</option>');
+                        });
+                        form.render('select');
+                    }
+                }
+            });
+        }
+
+        // 监听深度采集表单提交
+        form.on('submit(depth-crawl-submit)', function(data) {
+            var logDiv = $('#depth-crawl-log');
+            logDiv.append('<div>开始深度采集...</div>');
+            logDiv.scrollTop(logDiv[0].scrollHeight);
+
+            $.ajax({
+                url: '/admin/api/depth_crawl',
+                type: 'POST',
+                data: data.field,
+                success: function(res) {
+                    if (res.success) {
+                        logDiv.append('<div>深度采集完成</div>');
+                        // 刷新采集结果表格
+                        crawlResultsTable.reload();
+                    } else {
+                        logDiv.append('<div style="color: red;">深度采集失败：' + res.message + '</div>');
+                    }
+                    logDiv.scrollTop(logDiv[0].scrollHeight);
+                },
+                error: function() {
+                    logDiv.append('<div style="color: red;">深度采集失败：网络错误</div>');
+                    logDiv.scrollTop(logDiv[0].scrollHeight);
+                }
+            });
+            return false;
+        });
+
+
+
+        // 监听表格工具条
+        table.on('toolbar(crawl-results-table)', function(obj) {
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch(obj.event) {
+                case 'batch-depth-crawl':
+                    var data = checkStatus.data;
+                    if (data.length === 0) {
+                        layer.msg('请选择要深度采集的结果');
+                        return;
+                    }
+                    var ids = data.map(function(item) { return item.id; });
+                    layer.confirm('确定要批量深度采集选中的 ' + data.length + ' 条结果吗？', function(index) {
+                        $.ajax({
+                            url: '/admin/api/depth_crawl',
+                            type: 'POST',
+                            data: {ids: ids},
+                            success: function(res) {
+                                if (res.success) {
+                                    layer.msg('批量深度采集完成');
+                                    crawlResultsTable.reload();
+                                } else {
+                                    layer.msg('批量深度采集失败：' + res.message);
+                                }
+                            },
+                            error: function() {
+                                layer.msg('批量深度采集失败：网络错误');
+                            }
+                        });
+                        layer.close(index);
+                    });
+                    break;
+                case 'batch-delete':
+                    var data = checkStatus.data;
+                    if (data.length === 0) {
+                        layer.msg('请选择要删除的结果');
+                        return;
+                    }
+                    var ids = data.map(function(item) { return item.id; });
+                    layer.confirm('确定要批量删除选中的 ' + data.length + ' 条结果吗？', function(index) {
+                        $.ajax({
+                            url: '/admin/api/delete_selected',
+                            type: 'POST',
+                            data: {result_ids: ids.join(',')},
+                            success: function(res) {
+                                if (res.success) {
+                                    layer.msg('批量删除完成');
+                                    crawlResultsTable.reload();
+                                    // 更新深度采集的选择列表
+                                    loadCrawlResults();
+                                } else {
+                                    layer.msg('批量删除失败：' + res.message);
+                                }
+                            },
+                            error: function() {
+                                layer.msg('批量删除失败：网络错误');
+                            }
+                        });
+                        layer.close(index);
+                    });
+                    break;
+                case 'batch-store':
+                    var data = checkStatus.data;
+                    if (data.length === 0) {
+                        layer.msg('请选择要存储的结果');
+                        return;
+                    }
+                    var ids = data.map(function(item) { return item.id; });
+                    layer.confirm('确定要批量存储选中的 ' + data.length + ' 条结果吗？', function(index) {
+                        $.ajax({
+                            url: '/admin/api/store_data',
+                            type: 'POST',
+                            data: {result_ids: ids.join(',')},
+                            success: function(res) {
+                                if (res.success) {
+                                    layer.msg('批量存储完成');
+                                    crawlResultsTable.reload();
+                                } else {
+                                    layer.msg('批量存储失败：' + res.message);
+                                }
+                            },
+                            error: function() {
+                                layer.msg('批量存储失败：网络错误');
+                            }
+                        });
+                        layer.close(index);
+                    });
+                    break;
+            };
+        });
+
+        // 监听行工具事件
+        table.on('tool(crawl-results-table)', function(obj) {
+            var data = obj.data;
+            switch(obj.event) {
+                case 'detail':
+                    layer.open({
+                        type: 2,
+                        title: '查看采集结果',
+                        area: ['80%', '80%'],
+                        content: '/admin/api/crawl_results/' + data.id
+                    });
+                    break;
+                case 'depth-crawl':
+                    layer.confirm('确定要深度采集此结果吗？', function(index) {
+                        $.ajax({
+                            url: '/admin/api/depth_crawl',
+                            type: 'POST',
+                            data: {result_id: data.id},
+                            success: function(res) {
+                                if (res.success) {
+                                    layer.msg('深度采集完成');
+                                    crawlResultsTable.reload();
+                                } else {
+                                    layer.msg('深度采集失败：' + res.message);
+                                }
+                            },
+                            error: function() {
+                                layer.msg('深度采集失败：网络错误');
+                            }
+                        });
+                        layer.close(index);
+                    });
+                    break;
+                case 'store':
+                    layer.confirm('确定要存储此结果吗？', function(index) {
+                        $.ajax({
+                            url: '/admin/api/store_data',
+                            type: 'POST',
+                            data: {result_ids: data.id},
+                            success: function(res) {
+                                if (res.success) {
+                                    layer.msg('存储完成');
+                                    crawlResultsTable.reload();
+                                } else {
+                                    layer.msg('存储失败：' + res.message);
+                                }
+                            },
+                            error: function() {
+                                layer.msg('存储失败：网络错误');
+                            }
+                        });
+                        layer.close(index);
+                    });
+                    break;
+                case 'delete':
+                    layer.confirm('确定要删除此结果吗？', function(index) {
+                        $.ajax({
+                            url: '/admin/api/delete_result',
+                            type: 'POST',
+                            data: {result_id: data.id},
+                            success: function(res) {
+                                if (res.success) {
+                                    obj.del();
+                                    layer.msg('删除完成');
+                                    // 更新深度采集的选择列表
+                                    loadCrawlResults();
+                                } else {
+                                    layer.msg('删除失败：' + res.message);
+                                }
+                            },
+                            error: function() {
+                                layer.msg('删除失败：网络错误');
+                            }
+                        });
+                        layer.close(index);
+                    });
+                    break;
+            }
+        });
+
+        // 加载深度采集的选择列表
+        loadCrawlResults();
+        
+        // 每30秒自动刷新统计数据
+        setInterval(function() {
+            // 如果当前在统计分析标签页，刷新数据
+            var activeTab = $('.layui-tab-title .layui-this').index();
+            if (activeTab === 3) {
+                loadStatsData();
+            }
+        }, 30000);
+        
+        // 加载统计数据（首次进入时，如果在统计标签页）
+        var activeTab = $('.layui-tab-title .layui-this').index();
+        if (activeTab === 3) {
+            loadStatsData();
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

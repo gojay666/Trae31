@@ -69,6 +69,12 @@ def create_app(config_class=None):
     from app.crawler import bp as crawler_bp
     app.register_blueprint(crawler_bp)
     
+    from app.crawler import admin_crawler_bp
+    app.register_blueprint(admin_crawler_bp, url_prefix='/admin')
+    
+    from app.warehouse import bp as warehouse_bp
+    app.register_blueprint(warehouse_bp)
+    
     return app
 
 

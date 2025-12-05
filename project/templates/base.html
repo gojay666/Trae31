@@ -11,81 +11,214 @@
     <!-- 响应式CSS已包含在style.css中 -->
     {% block css %}{% endblock %}
 </head>
-<body>
-    <!-- 页面头部 -->
-    <header class="layui-header" style="background: linear-gradient(135deg, #1E9FFF 0%, #009688 100%); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); transition: all 0.3s ease;">
-        <div class="layui-logo" style="background: rgba(255, 255, 255, 0.1); color: #fff; font-weight: 600; transition: all 0.3s ease;">
-            <i class="layui-icon layui-icon-console" style="margin-right: 8px;"></i>
-            {% block header %}舆情分析系统{% endblock %}
-        </div>
-        
-        <!-- 导航菜单 -->
-        <ul class="layui-nav layui-layout-left" style="background: transparent;">
-            <li class="layui-nav-item">
-                <a href="{{ url_for('main.index') }}" style="color: #fff; transition: all 0.3s ease;">
-                    <i class="layui-icon layui-icon-home"></i> 首页
-                </a>
-            </li>
-            {% if current_user.is_authenticated %}
+<body class="layui-layout-body">
+    <div class="layui-layout layui-layout-admin">
+        <!-- 页面头部 -->
+        <header class="layui-header" style="background: linear-gradient(135deg, #1E9FFF 0%, #009688 100%); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); transition: all 0.3s ease;">
+            <div class="layui-logo" style="background: rgba(255, 255, 255, 0.1); color: #fff; font-weight: 600; transition: all 0.3s ease;">
+                <i class="layui-icon layui-icon-console" style="margin-right: 8px;"></i>
+                {% block header %}舆情分析系统{% endblock %}
+            </div>
+            
+            <!-- 导航菜单 -->
+            <ul class="layui-nav layui-layout-left" style="background: transparent;">
                 <li class="layui-nav-item">
-                    <a href="{{ url_for('main.dashboard') }}" style="color: #fff; transition: all 0.3s ease;">
-                        <i class="layui-icon layui-icon-search"></i> 舆情分析
+                    <a href="{{ url_for('main.index') }}" style="color: #fff; transition: all 0.3s ease;">
+                        <i class="layui-icon layui-icon-home"></i> 首页
                     </a>
                 </li>
-                <li class="layui-nav-item">
-                    <a href="{{ url_for('business.dashboard') }}" style="color: #fff; transition: all 0.3s ease;">
-                        <i class="layui-icon layui-icon-dashboard"></i> 业务管理
-                    </a>
-                </li>
-                {% if current_user.is_admin %}
+                {% if current_user.is_authenticated %}
                     <li class="layui-nav-item">
-                        <a href="{{ url_for('system.users') }}" style="color: #fff; transition: all 0.3s ease;">
-                            <i class="layui-icon layui-icon-set"></i> 系统设置
+                        <a href="{{ url_for('main.dashboard') }}" style="color: #fff; transition: all 0.3s ease;">
+                            <i class="layui-icon layui-icon-down-circle"></i> 数据采集
+                        </a>
+                    </li>
+                    <li class="layui-nav-item">
+                        <a href="{{ url_for('warehouse.warehouse_page') }}" style="color: #fff; transition: all 0.3s ease;">
+                            <i class="layui-icon layui-icon-box"></i> 数据仓库
+                        </a>
+                    </li>
+                    <li class="layui-nav-item">
+                        <a href="{{ url_for('business.dashboard') }}" style="color: #fff; transition: all 0.3s ease;">
+                            <i class="layui-icon layui-icon-dashboard"></i> 业务管理
+                        </a>
+                    </li>
+                    {% if current_user.is_admin %}
+                        <li class="layui-nav-item">
+                            <a href="{{ url_for('system.system_users') }}" style="color: #fff; transition: all 0.3s ease;">
+                                <i class="layui-icon layui-icon-set"></i> 系统设置
+                            </a>
+                        </li>
+                    {% endif %}
+                {% endif %}
+            </ul>
+            
+            <!-- 用户菜单 -->
+            <ul class="layui-nav layui-layout-right" style="background: transparent;">
+                {% if current_user.is_authenticated %}
+                    <li class="layui-nav-item">
+                        <a href="javascript:;" style="color: #fff; transition: all 0.3s ease;">
+                            <img src="{{ url_for('static', filename='images/user-avatar.svg') }}" class="layui-nav-img user-avatar" style="border: 2px solid rgba(255, 255, 255, 0.3);">
+                            {{ current_user.username }}
+                        </a>
+                        <dl class="layui-nav-child" style="background: #fff; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); border-radius: 4px;">
+                            <dd>
+                                <a href="{{ url_for('business.settings') }}" style="color: #333;">
+                                    <i class="layui-icon layui-icon-set" style="color: #1E9FFF;"></i> 个人设置
+                                </a>
+                            </dd>
+                            <hr style="margin: 5px 0; border-color: #eee;">
+                            <dd>
+                                <a href="{{ url_for('auth.logout') }}" style="color: #333;">
+                                    <i class="layui-icon layui-icon-logout" style="color: #FF5722;"></i> 退出登录
+                                </a>
+                            </dd>
+                        </dl>
+                    </li>
+                {% else %}
+                    <li class="layui-nav-item">
+                        <a href="{{ url_for('auth.login') }}" style="color: #fff; transition: all 0.3s ease;">
+                            <i class="layui-icon layui-icon-username"></i> 登录
+                        </a>
+                    </li>
+                    <li class="layui-nav-item">
+                        <a href="{{ url_for('auth.register') }}" style="color: #fff; transition: all 0.3s ease;">
+                            <i class="layui-icon layui-icon-add-circle"></i> 注册
                         </a>
                     </li>
                 {% endif %}
-            {% endif %}
-        </ul>
+            </ul>
+        </header>
         
-        <!-- 用户菜单 -->
-        <ul class="layui-nav layui-layout-right" style="background: transparent;">
-            {% if current_user.is_authenticated %}
-                <li class="layui-nav-item">
-                    <a href="javascript:;" style="color: #fff; transition: all 0.3s ease;">
-                        <img src="{{ url_for('static', filename='images/user-avatar.svg') }}" class="layui-nav-img user-avatar" style="border: 2px solid rgba(255, 255, 255, 0.3);">
-                        {{ current_user.username }}
-                    </a>
-                    <dl class="layui-nav-child" style="background: #fff; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); border-radius: 4px;">
-                        <dd>
-                            <a href="{{ url_for('business.settings') }}" style="color: #333;">
-                                <i class="layui-icon layui-icon-set" style="color: #1E9FFF;"></i> 个人设置
-                            </a>
-                        </dd>
-                        <hr style="margin: 5px 0; border-color: #eee;">
-                        <dd>
-                            <a href="{{ url_for('auth.logout') }}" style="color: #333;">
-                                <i class="layui-icon layui-icon-logout" style="color: #FF5722;"></i> 退出登录
-                            </a>
-                        </dd>
-                    </dl>
-                </li>
-            {% else %}
-                <li class="layui-nav-item">
-                    <a href="{{ url_for('auth.login') }}" style="color: #fff; transition: all 0.3s ease;">
-                        <i class="layui-icon layui-icon-username"></i> 登录
-                    </a>
-                </li>
-                <li class="layui-nav-item">
-                    <a href="{{ url_for('auth.register') }}" style="color: #fff; transition: all 0.3s ease;">
-                        <i class="layui-icon layui-icon-add-circle"></i> 注册
-                    </a>
-                </li>
-            {% endif %}
-        </ul>
-    </header>
-    
-    <!-- 主要内容区域 -->
-    <div class="layui-container main-content" style="padding: 20px; background: #f5f7fa; min-height: calc(100vh - 140px); transition: all 0.3s ease;">
+        <!-- 左侧菜单栏 -->
+        <div class="layui-side layui-bg-black" style="background: linear-gradient(180deg, #2E3238 0%, #1D2129 100%);">
+            <div class="layui-side-scroll">
+                <!-- 左侧菜单 -->
+                <ul class="layui-nav layui-nav-tree" lay-filter="side-menu" style="background: transparent; border: none;">
+                    <li class="layui-nav-item layui-nav-itemed">
+                        <a class="" href="javascript:;">
+                            <i class="layui-icon layui-icon-app" style="color: #1E9FFF;"></i>
+                            <span>核心功能</span>
+                        </a>
+                        <dl class="layui-nav-child">
+                            <dd>
+                                <a href="{{ url_for('main.index') }}">
+                                    <i class="layui-icon layui-icon-home" style="color: #5FB878;"></i>
+                                    <span>首页</span>
+                                </a>
+                            </dd>
+                            {% if current_user.is_authenticated %}
+                                <dd>
+                                    <a href="{{ url_for('main.dashboard') }}">
+                                        <i class="layui-icon layui-icon-down-circle" style="color: #FF5722;"></i>
+                                        <span>数据采集</span>
+                                    </a>
+                                </dd>
+                                <dd>
+                                    <a href="{{ url_for('warehouse.warehouse_page') }}">
+                                        <i class="layui-icon layui-icon-box" style="color: #1E9FFF;"></i>
+                                        <span>数据仓库管理</span>
+                                    </a>
+                                </dd>
+                                {% if current_user.is_admin %}
+                                <dd>
+                                    <a href="{{ url_for('admin_crawler.rules_page') }}">
+                                        <i class="layui-icon layui-icon-code-circle" style="color: #009688;"></i>
+                                        <span>采集规则库</span>
+                                    </a>
+                                </dd>
+                                <dd>
+                                    <a href="{{ url_for('warehouse.ai_engines_page') }}">
+                                        <i class="layui-icon layui-icon-magic" style="color: #FFB800;"></i>
+                                        <span>AI引擎管理</span>
+                                    </a>
+                                </dd>
+                                {% endif %}
+                            {% endif %}
+                        </dl>
+                    </li>
+                    
+                    {% if current_user.is_authenticated %}
+                    <li class="layui-nav-item">
+                        <a href="javascript:;">
+                            <i class="layui-icon layui-icon-dashboard" style="color: #009688;"></i>
+                            <span>业务管理</span>
+                        </a>
+                        <dl class="layui-nav-child">
+                            <dd>
+                                <a href="{{ url_for('business.dashboard') }}">
+                                    <i class="layui-icon layui-icon-list" style="color: #1E9FFF;"></i>
+                                    <span>业务面板</span>
+                                </a>
+                            </dd>
+                            <dd>
+                                <a href="{{ url_for('business.settings') }}">
+                                    <i class="layui-icon layui-icon-set" style="color: #5FB878;"></i>
+                                    <span>业务设置</span>
+                                </a>
+                            </dd>
+                        </dl>
+                    </li>
+                    
+                    {% if current_user.is_admin %}
+                    <li class="layui-nav-item">
+                        <a href="javascript:;">
+                            <i class="layui-icon layui-icon-set" style="color: #393D49;"></i>
+                            <span>系统设置</span>
+                        </a>
+                        <dl class="layui-nav-child">
+                            <dd>
+                                <a href="{{ url_for('system.system_users') }}">
+                                    <i class="layui-icon layui-icon-user" style="color: #1E9FFF;"></i>
+                                    <span>用户管理</span>
+                                </a>
+                            </dd>
+                            <dd>
+                                <a href="{{ url_for('system.system_roles') }}">
+                                    <i class="layui-icon layui-icon-group" style="color: #FFB800;"></i>
+                                    <span>角色管理</span>
+                                </a>
+                            </dd>
+                            <dd>
+                                <a href="{{ url_for('system.system_config') }}">
+                                    <i class="layui-icon layui-icon-set" style="color: #5FB878;"></i>
+                                    <span>系统配置</span>
+                                </a>
+                            </dd>
+
+                        </dl>
+                    </li>
+                    {% endif %}
+                    {% endif %}
+                    
+                    {% if not current_user.is_authenticated %}
+                    <li class="layui-nav-item">
+                        <a href="javascript:;">
+                            <i class="layui-icon layui-icon-username" style="color: #FF5722;"></i>
+                            <span>用户中心</span>
+                        </a>
+                        <dl class="layui-nav-child">
+                            <dd>
+                                <a href="{{ url_for('auth.login') }}">
+                                    <i class="layui-icon layui-icon-username" style="color: #1E9FFF;"></i>
+                                    <span>登录</span>
+                                </a>
+                            </dd>
+                            <dd>
+                                <a href="{{ url_for('auth.register') }}">
+                                    <i class="layui-icon layui-icon-add-circle" style="color: #5FB878;"></i>
+                                    <span>注册</span>
+                                </a>
+                            </dd>
+                        </dl>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+        
+        <!-- 主要内容区域 -->
+        <div class="layui-body main-content" style="left: 200px; padding: 20px; background: #f5f7fa; min-height: calc(100vh - 60px); transition: all 0.3s ease;">
         <!-- 显示Flash消息 -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -120,15 +253,18 @@
         {% block content %}{% endblock %}
     </div>
     
-    <!-- 页脚 -->
-    <footer class="layui-footer" style="background: linear-gradient(135deg, #1E9FFF 0%, #009688 100%); color: #fff; padding: 20px 0; transition: all 0.3s ease;">
-        <div class="layui-container">
-            <p style="margin: 0; font-size: 14px; text-align: center;">
-                <i class="layui-icon layui-icon-copyright" style="margin-right: 8px;"></i>
-                {{ now().year }} 舆情分析系统 - 版权所有
-            </p>
         </div>
-    </footer>
+        
+        <!-- 页脚 -->
+        <footer class="layui-footer" style="background: linear-gradient(135deg, #1E9FFF 0%, #009688 100%); color: #fff; padding: 20px 0; transition: all 0.3s ease; text-align: center;">
+            <div class="layui-container">
+                <p style="margin: 0; font-size: 14px; text-align: center;">
+                    <i class="layui-icon layui-icon-copyright" style="margin-right: 8px;"></i>
+                    {{ now().year }} 舆情分析系统 - 版权所有
+                </p>
+            </div>
+        </footer>
+    </div>
     
     <!-- 引入LayUI JavaScript -->
     <script src="{{ url_for('static', filename='layui/layui.js') }}"></script>
@@ -142,6 +278,9 @@
             var element = layui.element;
             var layer = layui.layer;
             var form = layui.form;
+            
+            // 初始化左侧菜单
+            element.render('nav', 'side-menu');
             
             // 3秒后自动隐藏所有alert元素，带淡出动画
             setTimeout(function() {
@@ -217,7 +356,58 @@
             margin-right: 5px;
         }
         
-        /* 响应式头部 */
+        /* 左侧菜单样式增强 */
+        .layui-side-scroll .layui-nav {
+            background: transparent;
+        }
+        
+        .layui-nav-tree .layui-nav-item a {
+            color: #C2C2C2;
+            border-left: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .layui-nav-tree .layui-nav-item a:hover {
+            color: #fff;
+            background: rgba(30, 159, 255, 0.2);
+            border-left-color: #1E9FFF;
+        }
+        
+        .layui-nav-tree .layui-nav-itemed > a {
+            color: #fff;
+            background: rgba(30, 159, 255, 0.25);
+            border-left-color: #1E9FFF;
+        }
+        
+        .layui-nav-tree .layui-nav-child a {
+            padding-left: 30px;
+            color: #999;
+        }
+        
+        .layui-nav-tree .layui-nav-child a:hover {
+            color: #fff;
+            background: rgba(30, 159, 255, 0.15);
+            border-left-color: #1E9FFF;
+        }
+        
+        .layui-nav-tree .layui-nav-item .layui-icon {
+            margin-right: 8px;
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* 响应式布局 */
+        @media (max-width: 1024px) {
+            .layui-body {
+                left: 0;
+            }
+            
+            .layui-side {
+                transform: translateX(-200px);
+            }
+        }
+        
         @media (max-width: 768px) {
             .layui-logo span {
                 display: none;

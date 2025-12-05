@@ -11,7 +11,7 @@
                 <div class="layui-card-header">
                     <span class="layui-breadcrumb">
                         <a href="{{ url_for('main.index') }}"><i class="layui-icon layui-icon-home"></i> 首页</a>
-                        <a href="{{ url_for('system.index') }}"><i class="layui-icon layui-icon-set"></i> 系统设置</a>
+                        <a href="{{ url_for('system.system_index') }}"><i class="layui-icon layui-icon-set"></i> 系统设置</a>
                         <a><cite>用户管理</cite></a>
                     </span>
                     <div class="layui-card-header-tool">
@@ -74,19 +74,23 @@
                 <i class="layui-icon layui-icon-delete"></i> 删除
             </button>
             <button class="layui-btn layui-btn-warm layui-btn-sm" lay-event="toggle">
-                <i class="layui-icon layui-icon-switch"></i> {{ d.is_active ? '禁用' : '启用' }}
+                <i class="layui-icon layui-icon-switch"></i> 切换状态
             </button>
         </div>
     </script>
 
     <!-- 状态列 -->
     <script type="text/html" id="statusTpl">
+        {% raw %}
         <input type="checkbox" name="status" value="{{ d.id }}" lay-skin="switch" lay-text="启用|禁用" {{ d.is_active ? 'checked' : '' }} lay-filter="statusSwitch">
+        {% endraw %}
     </script>
 
     <!-- 角色列 -->
     <script type="text/html" id="roleTpl">
+        {% raw %}
         <span class="layui-badge {{ d.is_admin ? 'layui-bg-blue' : 'layui-bg-green' }}">{{ d.is_admin ? '管理员' : '普通用户' }}</span>
+        {% endraw %}
     </script>
 
     <!-- 添加/编辑用户弹窗 -->

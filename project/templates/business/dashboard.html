@@ -219,11 +219,13 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block js %}
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
 <script>
 // 初始化图表
-layui.use(['echarts'], function() {
-    var echarts = layui.echarts;
+layui.use(['jquery', 'layer'], function() {
     
     // 用户增长趋势图
     var userGrowthChart = echarts.init(document.getElementById('user-growth-chart'));
